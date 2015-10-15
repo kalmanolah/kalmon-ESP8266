@@ -1,0 +1,7 @@
+{
+  "sta_ssid": "",
+  "sta_psk": "",
+  "ap_psk": "ESP-8266",
+  "cfg_pin": 4,
+  "ws_port": 80
+}
