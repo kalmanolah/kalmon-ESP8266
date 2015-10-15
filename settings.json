@@ -3,5 +3,8 @@
   "sta_psk": "",
   "ap_psk": "ESP-8266",
   "cfg_pin": 4,
-  "ws_port": 80
+  "ws_port": 80,
+  "report_interval": "30",
+  "report_queued": false,
+  "sleep": "0"
 }

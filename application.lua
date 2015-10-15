@@ -1,28 +1,45 @@
+local send_report = function()
+  print('Report: Sending')
+  -- Report sending code goes here
+end
+
 if not not cfg.data.sta_ssid then
   wifi.setphymode(wifi.PHYMODE_N)
   wifi.setmode(wifi.STATION)
   wifi.sta.config(cfg.data.sta_ssid, cfg.data.sta_psk)
 
-  local joinCounter = 0
-  local joinMaxAttempts = 5
+  local tries = 0
+  local maxTries = 10
 
-  tmr.alarm(0, 3000, 1, function()
+  tmr.alarm(0, 1000, 1, function()
     local ip = wifi.sta.getip()
 
-    if ip == nil and joinCounter < joinMaxAttempts then
+    if ip == nil and tries < maxTries then
       print('Wifi: Connecting..')
-      joinCounter = joinCounter +1
+      tries = tries +1
     else
-      if joinCounter == joinMaxAttempts then
+      if tries == maxTries then
          print('Wifi: Connection failed')
       else
          print('Wifi: Connected, IP:', ip)
       end
 
       tmr.stop(0)
-      joinCounter = nil
-      joinMaxAttempts = nil
+      tries = nil
+      maxTries = nil
       collectgarbage()
+
+      cfg.data.report_queued = false
+      cfg.save()
+      send_report()
+
+      if cfg.data.sleep == '1' then
+        cfg.data.report_queued = true
+        cfg.save()
+        node.dsleep(tonumber(cfg.data.report_interval) * 1000 * 1000)
+      else
+        tmr.alarm(0, tonumber(cfg.data.report_interval) * 1000, 1, send_report)
+      end
     end
   end)
 else

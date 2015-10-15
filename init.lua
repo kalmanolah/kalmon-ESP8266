@@ -28,7 +28,7 @@ compileFiles = nil
 collectgarbage()
 
 cfg = dofile("settings.lc")
-for k,v in pairs(cfg.data) do print(k .. ": " .. v) end
+for k,v in pairs(cfg.data) do print(k .. ": " .. tostring(v)) end
 
 gpio.mode(cfg.data.cfg_pin, gpio.INPUT)
 local tries = 0
