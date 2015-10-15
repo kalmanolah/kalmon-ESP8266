@@ -36,7 +36,7 @@ if not not cfg.data.sta_ssid then
       if cfg.data.sleep == '1' then
         cfg.data.report_queued = true
         cfg.save()
-        node.dsleep(tonumber(cfg.data.report_interval) * 1000 * 1000)
+        node.dsleep(tonumber(cfg.data.report_interval) * 1000 * 1000, 4)
       else
         tmr.alarm(0, tonumber(cfg.data.report_interval) * 1000, 1, send_report)
       end
