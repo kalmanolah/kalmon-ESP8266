@@ -29,8 +29,11 @@ if not not cfg.data.sta_ssid then
       maxTries = nil
       collectgarbage()
 
-      cfg.data.report_queued = false
-      cfg.save()
+      if not not cfg.data.report_queued then
+        cfg.data.report_queued = false
+        cfg.save()
+      end
+
       send_report()
 
       if cfg.data.sleep == '1' then
