@@ -30,6 +30,9 @@ collectgarbage()
 cfg = dofile("settings.lc")
 for k,v in pairs(cfg.data) do print(k .. ": " .. tostring(v)) end
 
+-- Starting out in STATIONAP mode helps prevent some silly adc.readvdd33() issues down the line
+wifi.setmode(wifi.STATIONAP)
+
 gpio.mode(cfg.data.cfg_pin, gpio.INPUT)
 local tries = 0
 local maxTries = 3

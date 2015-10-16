@@ -5,7 +5,6 @@
   "cfg_pin": 4,
   "ws_port": 80,
   "report_interval": "30",
-  "report_queued": false,
   "sleep": "0",
   "mqtt_user": "user",
   "mqtt_password": "password",
