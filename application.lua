@@ -14,15 +14,15 @@ local send_report = nil
 local voltage = adc.readvdd33()
 
 local mq_client_id = "ESP-" .. node.chipid()
+local mq_prefix = "/nodes/" .. mq_client_id
 local mq = mqtt.Client(mq_client_id, 120, cfg.data.mqtt_user, cfg.data.mqtt_password)
 local mq_connected = false
 -- See http://www.hivemq.com/blog/mqtt-essentials-part-9-last-will-and-testament
 mq:lwt("/lwt", "offline", 0, 0)
 mq:on("connect", function(conn)
   mq_connected = true
+  tmr.stop(0)
   print("MQTT: Connected")
-
-  -- mq:subscribe("/nodes/" .. mq_client_id .. "/commands", 0, 0)
 
   send_report()
   collectgarbage()
@@ -43,7 +43,7 @@ wifi.setmode(wifi.STATION)
 wifi.sta.config(cfg.data.sta_ssid, cfg.data.sta_psk)
 
 queue_report = function()
-  if cfg.data.sleep == '1' then
+  if cfg.data.sleep == '0' then
     if mq_connected then
       mq:close()
     end
@@ -61,23 +61,37 @@ end
 send_report = function()
   if not wifi.sta.getip() then
     print('Report: Skipping, no Wifi')
-
     queue_report()
   elseif not mq_connected then
     print('Report: Skipping, no MQTT')
-
-    -- mq:connect(cfg.data.mqtt_host, tonumber(cfg.data.mqtt_port), cfg.data.mqtt_secure == '1', function(conn)
-    --   send_report()
-    --   collectgarbage()
-    -- end)
     mq:connect(cfg.data.mqtt_host, tonumber(cfg.data.mqtt_port), cfg.data.mqtt_secure == '1')
 
-    queue_report()
+    -- Wait a second for MQTT connection
+    tmr.alarm(0, 1000, 0, function()
+      queue_report()
+    end)
   else
     print('Report: Sending')
+    mq:publish(mq_prefix .. "/battery/voltage", tostring(voltage), 0, 0, function(conn)
+      local dht_pin = 3
+      gpio.mode(dht_pin, gpio.INPUT)
+      local status, temp, hum, temp_dec, hum_dec = dht.read(dht_pin)
 
-    mq:publish("/nodes/" .. mq_client_id .. "/sensors/battery", tostring(voltage), 0, 0, function(conn)
-      queue_report()
+      if status == dht.OK then
+        mq:publish(mq_prefix .. "/sensors/temperature", string.format("%d.%03d", math.floor(temp), temp_dec), 0, 0, function(conn)
+          mq:publish(mq_prefix .. "/sensors/humidity", string.format("%d.%03d", math.floor(hum), hum_dec), 0, 0, function(conn)
+            queue_report()
+          end)
+        end)
+      else
+        if status == dht.ERROR_CHECKSUM then
+          print("DHT Checksum error.")
+        elseif status == dht.ERROR_TIMEOUT then
+          print("DHT Timeout.")
+        end
+
+        queue_report()
+      end
     end)
   end
 end
