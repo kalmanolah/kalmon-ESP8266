@@ -17,6 +17,38 @@ local mq_client_id = "ESP-" .. node.chipid()
 local mq_prefix = "/nodes/" .. mq_client_id
 local mq = mqtt.Client(mq_client_id, 120, cfg.data.mqtt_user, cfg.data.mqtt_password)
 local mq_connected = false
+mq_report_step = 0
+mq_report_sources = {}
+mq_report_data = {}
+
+-- Register MQTT report data sources
+mq_report_sources[1] = function()
+  return {
+    { "/battery/voltage", tostring(voltage) }
+  }
+end
+mq_report_sources[2] = function()
+  local dht_pin = 3
+  gpio.mode(dht_pin, gpio.INPUT)
+  local status, temp, hum, temp_dec, hum_dec = dht.read(dht_pin)
+
+  if status == dht.OK then
+    return {
+      { "/sensors/temperature", string.format("%d.%03d", math.floor(temp), temp_dec) },
+      { "/sensors/temperature", string.format("%d.%03d", math.floor(hum), hum_dec) }
+    }
+  else
+    if status == dht.ERROR_CHECKSUM then
+      print("DHT Checksum error.")
+    elseif status == dht.ERROR_TIMEOUT then
+      print("DHT Timeout.")
+    end
+
+    return nil
+  end
+end
+
+-- Register MQTT event handlers
 -- See http://www.hivemq.com/blog/mqtt-essentials-part-9-last-will-and-testament
 mq:lwt("/lwt", "offline", 0, 0)
 mq:on("connect", function(conn)
@@ -43,7 +75,10 @@ wifi.setmode(wifi.STATION)
 wifi.sta.config(cfg.data.sta_ssid, cfg.data.sta_psk)
 
 queue_report = function()
-  if cfg.data.sleep == '0' then
+  mq_report_step = 0
+  mq_report_data = {}
+
+  if cfg.data.sleep == '1' then
     if mq_connected then
       mq:close()
     end
@@ -71,28 +106,29 @@ send_report = function()
       queue_report()
     end)
   else
-    print('Report: Sending')
-    mq:publish(mq_prefix .. "/battery/voltage", tostring(voltage), 0, 0, function(conn)
-      local dht_pin = 3
-      gpio.mode(dht_pin, gpio.INPUT)
-      local status, temp, hum, temp_dec, hum_dec = dht.read(dht_pin)
-
-      if status == dht.OK then
-        mq:publish(mq_prefix .. "/sensors/temperature", string.format("%d.%03d", math.floor(temp), temp_dec), 0, 0, function(conn)
-          mq:publish(mq_prefix .. "/sensors/humidity", string.format("%d.%03d", math.floor(hum), hum_dec), 0, 0, function(conn)
-            queue_report()
-          end)
-        end)
-      else
-        if status == dht.ERROR_CHECKSUM then
-          print("DHT Checksum error.")
-        elseif status == dht.ERROR_TIMEOUT then
-          print("DHT Timeout.")
+    if mq_report_step > 0 and mq_report_step >= #mq_report_data then
+      print('Report: Finished')
+      queue_report()
+    else
+      if mq_report_step == 0 then
+        print('Report: Sending')
+        for i, source in pairs(mq_report_sources) do
+          local results = source()
+          for i, result in pairs(results) do
+            mq_report_data[#mq_report_data + 1] = result
+          end
         end
-
-        queue_report()
       end
-    end)
+
+      mq_report_step = mq_report_step + 1
+      local result = mq_report_data[mq_report_step]
+
+      if result then
+        mq:publish(mq_prefix .. result[1], result[2], 0, 0, function(conn)
+          send_report()
+        end)
+      end
+    end
   end
 end
 
