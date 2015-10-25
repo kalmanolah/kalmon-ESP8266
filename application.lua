@@ -23,8 +23,10 @@ mq_report_data = {}
 
 -- Register MQTT report data sources
 mq_report_sources[1] = function()
+  local voltage_str = string.format("%d.%03d", math.floor(voltage / 1000), voltage - ((voltage / 1000) * 1000))
+
   return {
-    { "/battery/voltage", tostring(voltage) }
+    { "/sensors/battery/voltage", voltage_str }
   }
 end
 mq_report_sources[2] = function()
@@ -35,7 +37,7 @@ mq_report_sources[2] = function()
   if status == dht.OK then
     return {
       { "/sensors/temperature", string.format("%d.%03d", math.floor(temp), temp_dec) },
-      { "/sensors/temperature", string.format("%d.%03d", math.floor(hum), hum_dec) }
+      { "/sensors/humidity", string.format("%d.%03d", math.floor(hum), hum_dec) }
     }
   else
     if status == dht.ERROR_CHECKSUM then
