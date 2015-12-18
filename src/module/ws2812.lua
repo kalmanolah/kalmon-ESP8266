@@ -18,11 +18,11 @@ obj.command_handlers = function()
   local handlers = {}
 
   handlers['/ws2812/color'] = function(data)
-    local rgb = cjson.decode(data)
-    rgb = string.char(rgb.r, rgb.g, rgb.b)
-    ws2812.writergb(cfg.data.ws2812_pin, rgb)
+    local leds = cjson.decode(data)
+    leds = string.char(leds.r, leds.g, leds.b):rep(leds.count or 1)
+    ws2812.writergb(cfg.data.ws2812_pin, leds)
 
-    rgb = nil
+    leds = nil
     collectgarbage()
   end
 
