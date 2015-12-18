@@ -8,4 +8,7 @@ wifi.setphymode(wifi.PHYMODE_G)
 wifi.setmode(wifi.SOFTAP)
 wifi.ap.config(ap_cfg)
 
+ap_cfg = nil
+collectgarbage()
+
 dofile("httpserver.lc")(cfg.data.ws_port)

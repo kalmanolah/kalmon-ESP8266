@@ -32,7 +32,7 @@ mq:on("connect", function(conn)
   tmr.stop(0)
 
   -- Subscribe to all command topics
-  for topic, handler in ipairs(mq_command_handlers) do
+  for topic, handler in pairs(mq_command_handlers) do
     mq:subscribe(mq_prefix .. '/commands' .. topic, 0, function(conn)
       print('MQTT: Subscribed to topic:', topic)
     end)
@@ -51,7 +51,7 @@ mq:on("message", function(conn, topic, data)
   print("MQTT: Received, topic:", topic)
 
   -- If this is a command, try to have it handled
-  local cmd = topic:match('^' .. mq_prefix .. '/commands/(.+)$')
+  local cmd = topic:match('/commands(/.+)')
 
   if cmd ~= nil and mq_command_handlers[cmd] then
     print('CMD: Handling command:', cmd)
@@ -122,6 +122,8 @@ send_report = function()
         mq:publish(mq_prefix .. data[1], data[2], 0, 0, function(conn)
           send_report()
         end)
+      else
+        send_report()
       end
 
       data = nil

@@ -44,7 +44,7 @@ loadModules = function()
   modules = {}
 
   for i, f in ipairs(getMatchedFiles('^module/.+%.lc')) do
-    modules[#modules + 1] = dofile(f)
+    modules[#modules + 1] = f
   end
 
   collectgarbage()
@@ -56,12 +56,10 @@ triggerModules = function(ev)
   local temp_result = nil
 
   for i, m in ipairs(modules) do
-    if m[ev] ~= nil then
-      temp_result = m[ev]()
+    temp_result = dofile(m)(ev)
 
-      if temp_result ~= nil then
-        results[#results + 1] = temp_result
-      end
+    if temp_result ~= nil then
+      results[#results + 1] = temp_result
     end
   end
 
@@ -80,6 +78,8 @@ tableMerge = function(tbl1, tbl2)
       tbl1[k] = v
     end
   end
+
+  collectgarbage()
 end
 
 -- Merges an array of tables into a single table
@@ -96,10 +96,16 @@ end
 compileAndRemoveLuaFiles()
 loadModules()
 
+compileAndRemoveFile = nil
+compileAndRemoveLuaFiles = nil
+loadModules = nil
+collectgarbage()
+
+wifi.setmode(wifi.STATIONAP)
+triggerModules('init')
+
 cfg = dofile('settings.lc')
 for k, v in pairs(cfg.data) do print(k .. ": " .. tostring(v)) end
-
-triggerModules('init')
 
 gpio.mode(cfg.data.cfg_pin, gpio.INPUT)
 local tries = 0

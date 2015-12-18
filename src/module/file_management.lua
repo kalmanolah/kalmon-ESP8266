@@ -3,32 +3,38 @@
 local obj = {}
 
 obj.command_handlers = function()
-  return {
-    '/files/read' = function(data)
-      local content = nil
+  local handlers = {}
 
-      if file.open(data.target, 'r') then
-        content = file.read()
-        file.close()
-      end
+  handlers['/files/read'] = function(data)
+    local content = nil
 
-      return content
-    end,
-
-    '/files/rename' = function(data)
-      file.rename(data.source, data.destination)
-    end,
-
-    '/files/remove' = function(data)
-      file.remove(data.target)
-    end,
-
-    '/files/create' = function(data)
-      file.open(data.target, "w+")
-      file.write(data.content)
+    if file.open(data.target, 'r') then
+      content = file.read()
       file.close()
     end
-  }
+
+    return content
+  end
+
+  handlers['/files/rename'] = function(data)
+    file.rename(data.source, data.destination)
+  end
+
+  handlers['/files/remove'] = function(data)
+    file.remove(data.target)
+  end
+
+  handlers['/files/create'] = function(data)
+    file.open(data.target, "w+")
+    file.write(data.content)
+    file.close()
+  end
+
+  return handlers
 end
 
-return obj
+return function(fnc, args)
+  if obj[fnc] then
+    return obj[fnc](args)
+  end
+end

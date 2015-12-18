@@ -25,13 +25,13 @@ return function (connection, req, args)
 
     if v.type == 'boolean' then
       connection:send('<select name="' .. k .. '" id="' .. k .. '" ' .. (v.required and 'required' or '') .. '>')
-      connection:send('<option ' .. (cfg.data[k] and 'selected' or '') .. ' value="0">No</option>')
-      connection:send('<option ' .. ((not cfg.data[k]) and 'selected' or '') .. ' value="1">Yes</option>')
+      connection:send('<option ' .. ((not cfg.data[k]) and 'selected' or '') .. ' value="0">No</option>')
+      connection:send('<option ' .. (cfg.data[k] and 'selected' or '') .. ' value="1">Yes</option>')
       connection:send('</select>')
     elseif v.type == 'number' then
-      connection:send('<input value="' .. string.gsub(cfg.data[k], '"', '&quot;') .. '" name="' .. k .. '" id="' .. k .. '" ' .. (v.required and 'required ' or '') .. (v.min and 'min="' .. v.min .. '" ' or '')  .. (v.max and 'max="' .. v.max .. '" ' or '') .. ' type="number">')
+      connection:send('<input value="' .. string.gsub(cfg.data[k] or '', '"', '&quot;') .. '" name="' .. k .. '" id="' .. k .. '" ' .. (v.required and 'required ' or '') .. (v.min and 'min="' .. v.min .. '" ' or '')  .. (v.max and 'max="' .. v.max .. '" ' or '') .. ' type="number">')
     else
-      connection:send('<input value="' .. string.gsub(cfg.data[k], '"', '&quot;') .. '" name="' .. k .. '" id="' .. k .. '" ' .. (v.required and 'required ' or '') .. ' type="' .. (v.type or 'text') .. '">')
+      connection:send('<input value="' .. string.gsub(cfg.data[k] or '', '"', '&quot;') .. '" name="' .. k .. '" id="' .. k .. '" ' .. (v.required and 'required ' or '') .. ' type="' .. (v.type or 'text') .. '">')
     end
 
     connection:send('</div>')

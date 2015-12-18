@@ -1,11 +1,12 @@
 -- This module adds reporting temperature and humidity readings
 -- from a DHT temp/hum sensor to reports.
-obj = {}
+local obj = {}
 
 obj.configuration_fields = function()
   return {
     dht_pin = {
-      type = 'number'
+      type = 'number',
+      default = false
     }
   }
 end
@@ -35,4 +36,8 @@ obj.report_data = function()
   end
 end
 
-return obj
+return function(fnc, args)
+  if obj[fnc] then
+    return obj[fnc](args)
+  end
+end

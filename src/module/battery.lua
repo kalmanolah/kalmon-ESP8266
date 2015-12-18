@@ -1,12 +1,16 @@
 -- This module adds battery voltage to reports. Due to certain
 -- hardware limitations, battery voltage is only measured at boot.
-obj = {}
+local obj = {}
 
 obj.init = function()
   obj.reading = adc.readvdd33()
 end
 
 obj.report_data = function()
+  if not obj.reading then
+    return
+  end
+
   local reading_str = string.format("%d.%03d", math.floor(obj.reading / 1000), obj.reading - ((obj.reading / 1000) * 1000))
 
   return {
@@ -14,4 +18,8 @@ obj.report_data = function()
   }
 end
 
-return obj
+return function(fnc, args)
+  if obj[fnc] then
+    return obj[fnc](args)
+  end
+end

@@ -73,11 +73,14 @@ function settings.load()
   end
 
   -- Populate empty fields with default data
-  for k, v in ipairs(settings.fields) do
-    if not not settings.data[k] then
+  for k, v in pairs(settings.fields) do
+    if settings.data[k] == nil then
       settings.data[k] = v.default
     end
   end
+
+  json = nil
+  content = nil
 
   collectgarbage()
 end
