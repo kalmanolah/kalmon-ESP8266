@@ -33,9 +33,8 @@ mq:on("connect", function(conn)
 
   -- Subscribe to all command topics
   for topic, handler in pairs(mq_command_handlers) do
-    mq:subscribe(mq_prefix .. '/commands' .. topic, 0, function(conn)
-      print('MQTT: Subscribed to topic:', topic)
-    end)
+    print('MQTT: Subscribing to topic:', topic)
+    mq:subscribe(mq_prefix .. '/commands' .. topic, 0, function(conn) end)
   end
 
   send_report()
@@ -55,7 +54,12 @@ mq:on("message", function(conn, topic, data)
 
   if cmd ~= nil and mq_command_handlers[cmd] then
     print('CMD: Handling command:', cmd)
-    mq_command_handlers[cmd](data)
+    local cmd_evt = {
+      data = cjson.decode(data)
+    }
+
+    mq_command_handlers[cmd](cmd_evt)
+    cmd_evt = nil
   end
 
   cmd = nil

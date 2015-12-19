@@ -5,10 +5,10 @@ local obj = {}
 obj.command_handlers = function()
   local handlers = {}
 
-  handlers['/files/read'] = function(data)
+  handlers['/files/read'] = function(evt)
     local content = nil
 
-    if file.open(data.target, 'r') then
+    if file.open(evt.data.target, 'r') then
       content = file.read()
       file.close()
     end
@@ -16,17 +16,17 @@ obj.command_handlers = function()
     return content
   end
 
-  handlers['/files/rename'] = function(data)
-    file.rename(data.source, data.destination)
+  handlers['/files/rename'] = function(evt)
+    file.rename(evt.data.source, evt.data.target)
   end
 
-  handlers['/files/remove'] = function(data)
-    file.remove(data.target)
+  handlers['/files/remove'] = function(evt)
+    file.remove(evt.data.target)
   end
 
-  handlers['/files/create'] = function(data)
-    file.open(data.target, "w+")
-    file.write(data.content)
+  handlers['/files/create'] = function(evt)
+    file.open(evt.data.target, "w+")
+    file.write(evt.data.content)
     file.close()
   end
 

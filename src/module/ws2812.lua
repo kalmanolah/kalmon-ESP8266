@@ -17,9 +17,8 @@ obj.command_handlers = function()
 
   local handlers = {}
 
-  handlers['/ws2812/color'] = function(data)
-    local leds = cjson.decode(data)
-    leds = string.char(leds.r, leds.g, leds.b):rep(leds.count or 1)
+  handlers['/ws2812/color'] = function(evt)
+    local leds = string.char(evt.data.color[1], evt.data.color[2], evt.data.color[3]):rep(evt.data.count or 1)
     ws2812.writergb(cfg.data.ws2812_pin, leds)
 
     leds = nil
