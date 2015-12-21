@@ -130,6 +130,12 @@ obj.configuration_fields = function()
     ws2812_pin = {
       type = 'number',
       default = false
+    },
+    ws2812_leds = {
+      type = 'number',
+      default = 24,
+      min = 1,
+      max = 256
     }
   }
 end
@@ -142,14 +148,14 @@ obj.command_handlers = function()
   -- Initialize frame buffer
   sess.ws2812_buffer = {}
   if cfg.data.ws2812_pin then
-    setLedColor({0, 0, 0.25}, 64)
+    setLedColor({0, 0, 0.25}, cfg.data.ws2812_leds)
   end
 
   local handlers = {}
 
   handlers['/ws2812/control'] = function (evt)
     if (not evt.data.type) or (evt.data.type == 'instant') then
-      setLedColor(evt.data.hsi, evt.data.count)
+      setLedColor(evt.data.hsi, cfg.data.ws2812_leds)
     elseif evt.data.type == 'fade' then
       local old = sess.ws2812_buffer[1]
 
@@ -180,7 +186,7 @@ obj.command_handlers = function()
           old[3] + (steps[3] * step_counter)
         }
 
-        setLedColor(hsi, evt.data.count)
+        setLedColor(hsi, cfg.data.ws2812_leds)
         tmr.delay(10000)
       end
 
