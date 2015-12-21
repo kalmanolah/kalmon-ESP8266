@@ -1,33 +1,101 @@
 -- This module adds commands for controlling a WS2812-based LED strip.
 local obj = {}
 
+local math = {}
+
+math.pi = 3141593 / 1000000
+
+math.abs = function(v)
+  return v < 0 and v * -1 or v
+end
+
+math.fmod = function(x, y)
+  return x % y
+end
+
+math.correct_radians = function(v)
+  while v > math.pi * 2 do
+    v = v - math.pi * 2
+  end
+
+  while v < - math.pi * 2 do
+    v = v + math.pi * 2
+  end
+
+  return v
+end
+
+math.pow = function(b, p)
+  local e = b
+
+  if (p == 0) then
+    return 1
+  end
+
+  if (p < 0) then
+    p = p * (-1)
+  end
+
+  for c = p, 2, -1 do
+    e = e * b
+  end
+
+  return e
+end
+
+math.fact = function(b)
+  if (b == 1) or (b == 0) then
+    return 1
+  end
+
+  local e = 1
+
+  for c = b, 1, -1 do
+    e = e * c
+  end
+
+  return e
+end
+
+math.cos = function(b, p)
+  local e = 1
+  b = math.correct_radians(b)
+  p = p or 10
+
+  for i = 1, p do
+    e = e + (math.pow(-1, i) * math.pow(b, 2 * i) / math.fact(2 * i))
+  end
+
+  return e
+end
+
 -- Ported from http://blog.saikoled.com/post/43693602826/why-every-led-light-should-be-using-hsi
 local hsiToRgb = function (h, s, i)
-  local rgb = {0, 0, 0}
+  local r, g, b = 0
 
   h = math.fmod(h, 360) -- Cycle hue around to 0-360 degrees
-  h = 3.14159 * h / 180 -- Convert to radians
+  h = math.pi * h / 180 -- Convert to radians
   s = (s > 0) and ((s < 1) and s or 1) or 0 -- Clamp saturation to interval 0, 1
   i = (i > 0) and ((i < 1) and i or 1) or 0 -- Clamp intensity to interval 0, 1
 
   -- Math! Thanks in part to Kyle Miller.
   if h < 2.09439 then
-    rgb[1] = 255 * i / 3 * (1 + s * math.cos(h) / math.cos(1.047196667 - h))
-    rgb[2] = 255 * i / 3 * (1 + s * (1 - math.cos(h) / math.cos(1.047196667 - h)))
-    rgb[3] = 255 * i / 3 * (1 - s)
-  else if h < 4.188787 then
+    r = 255 * i / 3 * (1 + s * math.cos(h) / math.cos(1.047196667- h))
+    g = 255 * i / 3 * (1 + s * (1 - math.cos(h) / math.cos(1.047196667- h)))
+    b = 255 * i / 3 * (1 - s)
+  elseif h < 4.188787 then
     h = h - 2.09439
-    rgb[2] = 255 * i / 3 * (1 + s * math.cos(h) / math.cos(1.047196667 - h))
-    rgb[3] = 255 * i / 3 * (1 + s * (1-math.cos(h) / math.cos(1.047196667 - h)))
-    rgb[1] = 255 * i / 3 * (1 - s)
+    g = 255 * i / 3 * (1 + s * math.cos(h) / math.cos(1.047196667- h))
+    b = 255 * i / 3 * (1 + s * (1 - math.cos(h) / math.cos(1.047196667- h)))
+    r = 255 * i / 3 * (1 - s)
   else
     h = h - 4.188787
-    rgb[3] = 255 * i / 3 * (1 + s * math.cos(h) / math.cos(1.047196667 - h))
-    rgb[1] = 255 * i / 3 * (1 + s * (1 - math.cos(h) / math.cos(1.047196667 - h)))
-    rgb[2] = 255 * i / 3 * (1 - s)
+    b = 255 * i / 3 * (1 + s * math.cos(h) / math.cos(1.047196667- h))
+    r = 255 * i / 3 * (1 + s * (1 - math.cos(h) / math.cos(1.047196667- h)))
+    g = 255 * i / 3 * (1 - s)
   end
 
-  return rgb
+  return {r, g, b}
 end
 
 local setLedColor = function (hsi, length, offset)
@@ -43,24 +111,18 @@ local setLedColor = function (hsi, length, offset)
   end
 
   local frame = ''
+  local rgb = nil
 
   for i, v in pairs(sess.ws2812_buffer) do
-    frame = frame .. string.char(table.concat(hsiToRgb(v)))
+    rgb = hsiToRgb(v[1], v[2], v[3])
+    frame = frame .. string.char(rgb[1], rgb[2], rgb[3])
   end
 
   ws2812.writergb(cfg.data.ws2812_pin, frame)
 
   frame = nil
+  rgb = nil
   collectgarbage()
-end
-
-obj.init = function ()
-  sess.ws2812_buffer = {}
-
-  -- Initialize frame buffer
-  if cfg.data.ws2812_pin then
-    setLedColor({30, 0.25, 0.25}, 64)
-  end
 end
 
 obj.configuration_fields = function()
@@ -77,17 +139,30 @@ obj.command_handlers = function()
     return
   end
 
+  -- Initialize frame buffer
+  sess.ws2812_buffer = {}
+  if cfg.data.ws2812_pin then
+    setLedColor({0, 0, 0.25}, 64)
+  end
+
   local handlers = {}
 
-  handlers['/ws2812/control'] = function(evt)
+  handlers['/ws2812/control'] = function (evt)
     if (not evt.data.type) or (evt.data.type == 'instant') then
       setLedColor(evt.data.hsi, evt.data.count)
-    else if evt.data.type == 'fade' then
+    elseif evt.data.type == 'fade' then
       local old = sess.ws2812_buffer[1]
 
-      local duration = evt.data.duration or 5000
-      local step_duration = evt.data.step or 500
-      local step_count = duration / step_duration
+      -- Calculate amount of steps based on difference between old and new color data
+      local diff = {
+        math.abs((evt.data.hsi[1] - old[1]) / 18),
+        math.abs((evt.data.hsi[2] - old[2]) / 0.05),
+        math.abs((evt.data.hsi[3] - old[3]) / 0.05)
+      }
+
+      local step_count = diff[1]
+      step_count = step_count < diff[2] and diff[2] or step_count
+      step_count = step_count < diff[3] and diff[3] or step_count
       local step_counter = 0
 
       local steps = {
@@ -96,7 +171,7 @@ obj.command_handlers = function()
         (evt.data.hsi[3] - old[3]) / step_count
       }
 
-      tmr.alarm(5, step_duration, 1, function()
+      while step_counter < step_count do
         step_counter = step_counter + 1
 
         local hsi = {
@@ -106,20 +181,16 @@ obj.command_handlers = function()
         }
 
         setLedColor(hsi, evt.data.count)
+        tmr.delay(10000)
+      end
 
-        if step_counter == step_count then
-          tmr.stop(5)
-          old = nil
-          duration = nil
-          step_duration = nil
-          step_count = nil
-          step_counter = nil
-          steps = nil
-        end
-
-        hsi = nil
-        collectgarbage()
-      end)
+      old = nil
+      diff = nil
+      step_count = nil
+      step_counter = nil
+      steps = nil
+      hsi = nil
+      collectgarbage()
     end
   end
 
