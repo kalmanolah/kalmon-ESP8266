@@ -2,7 +2,7 @@
 local obj = {}
 
 -- Ported from http://blog.saikoled.com/post/43693602826/why-every-led-light-should-be-using-hsi
-local hsiToRgb= function (hue, s, i)
+local hsiToRgb = function (h, s, i)
   local rgb = {0, 0, 0}
 
   h = math.fmod(h, 360) -- Cycle hue around to 0-360 degrees
