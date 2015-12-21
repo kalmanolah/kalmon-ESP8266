@@ -106,6 +106,7 @@ triggerModules('init')
 
 cfg = dofile('settings.lc')
 for k, v in pairs(cfg.data) do print(k .. ": " .. tostring(v)) end
+sess = {} -- SESSion data..
 
 gpio.mode(cfg.data.cfg_pin, gpio.INPUT)
 local tries = 0
