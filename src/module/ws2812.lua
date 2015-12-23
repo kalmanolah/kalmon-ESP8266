@@ -154,7 +154,11 @@ obj.command_handlers = function()
   local handlers = {}
 
   handlers['/ws2812/control'] = function (evt)
-    local hsi = sess.ws2812_buffer[1]
+    local hsi = {
+      sess.ws2812_buffer[1][1],
+      sess.ws2812_buffer[1][2],
+      sess.ws2812_buffer[1][3]
+    }
 
     if evt.data.hue then
       hsi[1] = evt.data.hue
