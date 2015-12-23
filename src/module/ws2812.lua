@@ -154,16 +154,34 @@ obj.command_handlers = function()
   local handlers = {}
 
   handlers['/ws2812/control'] = function (evt)
+    local hsi = sess.ws2812_buffer[1]
+
+    if evt.data.hue then
+      hsi[1] = evt.data.hue
+    end
+
+    if evt.data.saturation then
+      hsi[2] = evt.data.saturation
+    end
+
+    if evt.data.intensity then
+      hsi[3] = evt.data.intensity
+    end
+
+    if evt.data.hsi then
+      hsi = evt.data.hsi
+    end
+
     if (not evt.data.type) or (evt.data.type == 'instant') then
-      setLedColor(evt.data.hsi, cfg.data.ws2812_leds)
+      setLedColor(hsi, cfg.data.ws2812_leds)
     elseif evt.data.type == 'fade' then
       local old = sess.ws2812_buffer[1]
 
       -- Calculate amount of steps based on difference between old and new color data
       local diff = {
-        math.abs((evt.data.hsi[1] - old[1]) / 18),
-        math.abs((evt.data.hsi[2] - old[2]) / 0.05),
-        math.abs((evt.data.hsi[3] - old[3]) / 0.05)
+        math.abs((hsi[1] - old[1]) / 18),
+        math.abs((hsi[2] - old[2]) / 0.05),
+        math.abs((hsi[3] - old[3]) / 0.05)
       }
 
       local step_count = diff[1]
@@ -172,21 +190,21 @@ obj.command_handlers = function()
       local step_counter = 0
 
       local steps = {
-        (evt.data.hsi[1] - old[1]) / step_count,
-        (evt.data.hsi[2] - old[2]) / step_count,
-        (evt.data.hsi[3] - old[3]) / step_count
+        (hsi[1] - old[1]) / step_count,
+        (hsi[2] - old[2]) / step_count,
+        (hsi[3] - old[3]) / step_count
       }
 
       while step_counter < step_count do
         step_counter = step_counter + 1
 
-        local hsi = {
+        local new_hsi = {
           old[1] + (steps[1] * step_counter),
           old[2] + (steps[2] * step_counter),
           old[3] + (steps[3] * step_counter)
         }
 
-        setLedColor(hsi, cfg.data.ws2812_leds)
+        setLedColor(new_hsi, cfg.data.ws2812_leds)
         tmr.delay(10000)
       end
 
@@ -195,9 +213,11 @@ obj.command_handlers = function()
       step_count = nil
       step_counter = nil
       steps = nil
-      hsi = nil
-      collectgarbage()
+      new_hsi = nil
     end
+
+    hsi = nil
+    collectgarbage()
   end
 
   return handlers
