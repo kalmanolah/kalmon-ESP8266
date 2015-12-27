@@ -72,6 +72,16 @@ end)
 
 wifi.setphymode(wifi.PHYMODE_N)
 wifi.setmode(wifi.STATION)
+wifi.sta.eventMonReg(wifi.STA_GOTIP, function()
+  -- wifi.sta.eventMonReg(wifi.STA_GOTIP, "unreg")
+  wifi.sta.eventMonStop("unreg all")
+
+  print("WIFI: Connected")
+  send_report()
+end)
+
+print("WIFI: Connecting..")
+wifi.sta.eventMonStart()
 wifi.sta.config(cfg.data.sta_ssid, cfg.data.sta_psk)
 
 queue_report = function()
@@ -111,7 +121,7 @@ send_report = function()
       queue_report()
     else
       if mq_report_step == 0 then
-        print('Report: Sending')
+        print('Report: Sending..')
 
         mq_report_data = triggerModules('report_data')
         mq_report_data = tablesMerge(mq_report_data)
@@ -135,28 +145,3 @@ send_report = function()
     end
   end
 end
-
-local tries = 0
-local maxTries = 10
-
-tmr.alarm(0, 1000, 1, function()
-  local ip = wifi.sta.getip()
-
-  if ip == nil and tries < maxTries then
-    print('Wifi: Connecting..')
-    tries = tries + 1
-  else
-    if tries == maxTries then
-      print('Wifi: Connection failed')
-    else
-      print('Wifi: Connected, IP:', ip)
-    end
-
-    tmr.stop(0)
-    tries = nil
-    maxTries = nil
-    collectgarbage()
-
-    send_report()
-  end
-end)
