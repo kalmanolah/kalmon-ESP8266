@@ -1,25 +1,27 @@
 return function (connection, req, args)
+  local fields = triggerModule('settings', 'fields')
+
   if req.method == "POST" then
     local rd = req.getRequestData()
 
     for k, v in pairs(rd) do
-      if cfg.fields[k].type == 'number' then
+      if fields[k].type == 'number' then
         v = tonumber(v)
-      elseif cfg.fields[k].type == 'boolean' then
+      elseif fields[k].type == 'boolean' then
         v = v == '1'
       end
 
       cfg.data[k] = v
     end
 
-    cfg.save()
+    triggerModule('settings', 'save')
   end
 
   connection:send("HTTP/1.0 200 OK\r\nContent-Type: text/html\r\nCache-Control: private, no-store\r\n\r\n")
   connection:send('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Settings</title></head><body>')
   connection:send('<form method="POST">')
 
-  for k, v in pairs(cfg.fields) do
+  for k, v in pairs(fields) do
     connection:send('<div class="form-group">')
     connection:send('<label for="' .. k .. '">' .. (v.label or k) .. '</label>')
 
@@ -38,4 +40,7 @@ return function (connection, req, args)
   end
 
   connection:send('<input class="btn btn-info" type="submit" value="submit"></form></body></html>')
+
+  fields = nil
+  collectgarbage()
 end

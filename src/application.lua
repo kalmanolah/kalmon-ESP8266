@@ -16,7 +16,7 @@ local mq_prefix = "/nodes/" .. mq_client_id
 local mq = mqtt.Client(mq_client_id, 120, cfg.data.mqtt_user, cfg.data.mqtt_password)
 local mq_connected = false
 
-mq_command_handlers = triggerModules('command_handlers')
+mq_command_handlers = triggerModules('_command_handlers')
 mq_command_handlers = tablesMerge(mq_command_handlers)
 
 mq_report_data = {}

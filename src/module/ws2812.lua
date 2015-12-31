@@ -125,7 +125,7 @@ local setLedColor = function (hsi, length, offset)
   collectgarbage()
 end
 
-obj.configuration_fields = function()
+obj._configuration_fields = function()
   return {
     ws2812_pin = {
       type = 'number',
@@ -140,7 +140,7 @@ obj.configuration_fields = function()
   }
 end
 
-obj.command_handlers = function()
+obj._command_handlers = function()
   if not cfg.data.ws2812_pin then
     return
   end

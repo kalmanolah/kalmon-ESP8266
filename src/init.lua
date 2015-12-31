@@ -41,22 +41,35 @@ end
 
 -- Load all modules
 loadModules = function()
+  local name = nil
   modules = {}
 
   for i, f in ipairs(getMatchedFiles('^module/.+%.lc')) do
-    modules[#modules + 1] = f
+    name = f:gsub('^module/', ''):gsub('%.lc', '')
+    modules[name] = f
   end
 
+  name = nil
   collectgarbage()
 end
 
--- Trigger a specific method on all modules, if implemented
+-- Trigger a specific method on a module
+triggerModule = function(mdl, ev)
+  local result = nil
+
+  result = dofile(modules[mdl])(ev)
+  collectgarbage()
+
+  return result
+end
+
+-- Trigger a specific method on all modules
 triggerModules = function(ev)
   local results = {}
   local temp_result = nil
 
-  for i, m in ipairs(modules) do
-    temp_result = dofile(m)(ev)
+  for n, m in pairs(modules) do
+    temp_result = triggerModule(n, ev)
 
     if temp_result ~= nil then
       results[#results + 1] = temp_result
@@ -102,9 +115,8 @@ loadModules = nil
 collectgarbage()
 
 wifi.setmode(wifi.STATIONAP)
-triggerModules('init')
+triggerModules('_init')
 
-cfg = dofile('settings.lc')
 for k, v in pairs(cfg.data) do print(k .. ": " .. tostring(v)) end
 sess = {} -- SESSion data..
 

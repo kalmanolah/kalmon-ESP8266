@@ -1,7 +1,7 @@
--- This module sends a heartbear on every report.
+-- This module sends a heartbeat on every report.
 local obj = {}
 
-obj.report_data = function()
+obj._report_data = function()
   return {
     { "/heartbeat", "ping" }
   }

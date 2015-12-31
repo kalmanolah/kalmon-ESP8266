@@ -1,7 +1,7 @@
 -- This module adds commands for controlling IOs.
 local obj = {}
 
-obj.command_handlers = function()
+obj._command_handlers = function()
   local handlers = {}
 
   handlers['/gpio/control'] = function (evt)

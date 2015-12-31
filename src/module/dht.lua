@@ -2,7 +2,7 @@
 -- from a DHT temp/hum sensor to reports.
 local obj = {}
 
-obj.configuration_fields = function()
+obj._configuration_fields = function()
   return {
     dht_pin = {
       type = 'number',
@@ -11,7 +11,7 @@ obj.configuration_fields = function()
   }
 end
 
-obj.report_data = function()
+obj._report_data = function()
   if not cfg.data.dht_pin then
     return
   end

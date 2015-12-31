@@ -2,7 +2,7 @@
 -- implementation of OTA updates.
 local obj = {}
 
-obj.command_handlers = function()
+obj._command_handlers = function()
   local handlers = {}
 
   handlers['/files/read'] = function(evt)

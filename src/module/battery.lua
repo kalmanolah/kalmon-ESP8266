@@ -2,11 +2,11 @@
 -- hardware limitations, battery voltage is only measured at boot.
 local obj = {}
 
-obj.init = function()
+obj._init = function()
   obj.reading = adc.readvdd33()
 end
 
-obj.report_data = function()
+obj._report_data = function()
   if not obj.reading then
     return
   end
