@@ -10,16 +10,18 @@ end
 
 local queue_report = nil
 local send_report = nil
+local flush_data = nil
 
-local mq_client_id = "ESP-" .. node.chipid()
-local mq_prefix = "/nodes/" .. mq_client_id
-local mq = mqtt.Client(mq_client_id, 120, cfg.data.mqtt_user, cfg.data.mqtt_password)
+local mq_id = "ESP-" .. node.chipid()
+local mq_prefix = "/nodes/" .. mq_id
+local mq = mqtt.Client(mq_id, 120, cfg.data.mqtt_user, cfg.data.mqtt_password)
 local mq_connected = false
 
-mq_command_handlers = triggerModules('_command_handlers')
-mq_command_handlers = tablesMerge(mq_command_handlers)
+mq_cmds = triggerModules('_command_handlers')
+mq_cmds = tablesMerge(mq_cmds)
 
-mq_report_data = {}
+mq_data = {}
+mq_data_ptr = 0
 mq_report_step = 0
 
 -- Register MQTT event handlers
@@ -32,7 +34,7 @@ mq:on("connect", function(conn)
   tmr.stop(0)
 
   -- Subscribe to all command topics
-  for topic, handler in pairs(mq_command_handlers) do
+  for topic, handler in pairs(mq_cmds) do
     print('MQTT: Subscribing to topic:', topic)
     mq:subscribe(mq_prefix .. '/commands' .. topic, 0, function(conn) end)
   end
@@ -52,13 +54,20 @@ mq:on("message", function(conn, topic, data)
   -- If this is a command, try to have it handled
   local cmd = topic:match('/commands(/.+)')
 
-  if cmd ~= nil and mq_command_handlers[cmd] then
+  if cmd ~= nil and mq_cmds[cmd] then
     print('CMD: Handling command:', cmd)
     local cmd_evt = {
       data = cjson.decode(data)
     }
 
-    mq_command_handlers[cmd](cmd_evt)
+    local cmd_res = mq_cmds[cmd](cmd_evt)
+
+    if cmd_res ~= nil then
+      mq_data[#mq_data + 1] = { topic .. '/response', cmd_res }
+      flush_data()
+    end
+
+    cmd_res = nil
     cmd_evt = nil
   end
 
@@ -84,10 +93,30 @@ print("WIFI: Connecting..")
 wifi.sta.eventMonStart()
 wifi.sta.config(cfg.data.sta_ssid, cfg.data.sta_psk)
 
-queue_report = function()
-  mq_report_step = 0
-  mq_report_data = {}
+flush_data = function(callback)
+  mq_data_ptr = mq_data_ptr + 1
 
+  if mq_data_ptr > #mq_data then
+    mq_data = {}
+    mq_data_ptr = 0
+
+    if callback ~= nil then
+      callback()
+    end
+  else
+    local d = mq_data[mq_data_ptr]
+
+    mq:publish(mq_prefix .. d[1], d[2], 0, 0, function(conn)
+      flush_data(callback)
+    end)
+
+    d = nil
+  end
+
+  collectgarbage()
+end
+
+queue_report = function()
   if cfg.data.sleep then
     if mq_connected then
       mq:close()
@@ -116,32 +145,15 @@ send_report = function()
       queue_report()
     end)
   else
-    if mq_report_step > 0 and mq_report_step >= #mq_report_data then
+    print('Report: Sending..')
+    mq_data = triggerModules('_report_data')
+    mq_data = tablesMerge(mq_data)
+
+    collectgarbage()
+
+    flush_data(function()
       print('Report: Finished')
       queue_report()
-    else
-      if mq_report_step == 0 then
-        print('Report: Sending..')
-
-        mq_report_data = triggerModules('_report_data')
-        mq_report_data = tablesMerge(mq_report_data)
-
-        collectgarbage()
-      end
-
-      mq_report_step = mq_report_step + 1
-      local data = mq_report_data[mq_report_step]
-
-      if data then
-        mq:publish(mq_prefix .. data[1], data[2], 0, 0, function(conn)
-          send_report()
-        end)
-      else
-        send_report()
-      end
-
-      data = nil
-      collectgarbage()
-    end
+    end)
   end
 end

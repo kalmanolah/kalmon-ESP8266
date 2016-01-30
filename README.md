@@ -21,6 +21,18 @@ TODO:
 * Logging over MQTT
 * Configuration commands
 
+
+### Installation
+
+This is just an example of how you'd upload this stuff.
+
+```
+pip install nodemcu-uploader
+git clone git clone https://github.com/kalmanolah/kalmon-ESP8266
+make upload_all PORT=/dev/ttyAMA0
+```
+
 ### Links/Attributions
 
 * [nodemcu-httpserver](https://github.com/marcoskirsch/nodemcu-httpserver)
+* [nodemcu-uploader](https://github.com/kmpm/nodemcu-uploader)
