@@ -63,7 +63,7 @@ mq:on("message", function(conn, topic, data)
     local cmd_res = mq_cmds[cmd](cmd_evt)
 
     if cmd_res ~= nil then
-      mq_data[#mq_data + 1] = { '/responses' .. topic, cmd_res }
+      mq_data[#mq_data + 1] = { '/responses' .. cmd, cmd_res }
       flush_data()
     end
 
