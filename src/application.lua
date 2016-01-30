@@ -123,7 +123,7 @@ send_report = function()
       if mq_report_step == 0 then
         print('Report: Sending..')
 
-        mq_report_data = triggerModules('report_data')
+        mq_report_data = triggerModules('_report_data')
         mq_report_data = tablesMerge(mq_report_data)
 
         collectgarbage()
