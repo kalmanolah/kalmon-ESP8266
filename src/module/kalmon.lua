@@ -25,30 +25,24 @@ obj._command_handlers = function()
     })
   end
 
-  -- handlers['/files/read'] = function(evt)
-  --   local content = nil
+  handlers['/restart'] = function(evt)
+    node.restart()
+  end
 
-  --   if file.open(evt.data.target, 'r') then
-  --     content = file.read()
-  --     file.close()
-  --   end
+  handlers['/cfg/set'] = function(evt)
+    cfg.data[evt.data.key] = evt.data.value
+    triggerModule('settings', 'save')
+  end
 
-  --   return content
-  -- end
+  handlers['/files/remove'] = function(evt)
+    file.remove(evt.data.file)
+  end
 
-  -- handlers['/files/rename'] = function(evt)
-  --   file.rename(evt.data.source, evt.data.target)
-  -- end
-
-  -- handlers['/files/remove'] = function(evt)
-  --   file.remove(evt.data.target)
-  -- end
-
-  -- handlers['/files/create'] = function(evt)
-  --   file.open(evt.data.target, "w+")
-  --   file.write(evt.data.content)
-  --   file.close()
-  -- end
+  handlers['/files/create'] = function(evt)
+    file.open(evt.data.file, "w+")
+    file.write(evt.data.content)
+    file.close()
+  end
 
   return handlers
 end
