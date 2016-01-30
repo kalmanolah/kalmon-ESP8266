@@ -13,9 +13,14 @@ obj._command_handlers = function()
   local handlers = {}
 
   handlers['/info'] = function(evt)
+    local files = {}
+    for f, s in pairs(file.list()) do
+      files[#files + 1] = {f, s}
+    end
+
     return cjson.encode({
       node = node.info(),
-      files = file.list(),
+      files = files,
       cfg = cfg.data,
     })
   end
