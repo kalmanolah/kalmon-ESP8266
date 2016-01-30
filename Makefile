@@ -3,7 +3,7 @@
 # User configuration
 ######################################################################
 # Path to nodemcu-uploader (https://github.com/kmpm/nodemcu-uploader)
-NODEMCU-UPLOADER=./modules/nodemcu-uploader/nodemcu-uploader.py
+NODEMCU-UPLOADER=nodemcu-uploader
 # Serial port
 PORT?=/dev/ttyUSB0
 SPEED?=9600
