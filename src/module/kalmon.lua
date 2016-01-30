@@ -13,11 +13,11 @@ obj._command_handlers = function()
   local handlers = {}
 
   handlers['/info'] = function(evt)
-    return {
+    return cjson.encode({
       node = node.info(),
       files = file.list(),
       cfg = cfg.data,
-    }
+    })
   end
 
   -- handlers['/files/read'] = function(evt)
