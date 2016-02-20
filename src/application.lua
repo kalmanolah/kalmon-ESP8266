@@ -35,7 +35,7 @@ mq:on("connect", function(conn)
 
   -- Subscribe to all command topics
   for topic, handler in pairs(mq_cmds) do
-    if topic[1] ~= '/' then
+    if topic:sub(1, 1) ~= '/' then
       topic = mq_prefix .. '/commands/' .. topic
     end
 
