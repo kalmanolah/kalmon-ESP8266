@@ -55,8 +55,8 @@ end)
 mq:on("message", function(conn, topic, data)
   print("MQTT: Received, topic:", topic)
 
-  -- If this is a command, try to have it handled
-  local cmd = topic:match('/commands/(.+)') or topic
+  local part = topic:match(mq_prefix .. '(/.+)') or topic
+  local cmd = part:match('/commands/(.+)') or part
 
   if cmd ~= nil and mq_cmds[cmd] then
     print('CMD: Handling command:', cmd)
@@ -75,8 +75,7 @@ mq:on("message", function(conn, topic, data)
         cmd_res = cjson.encode(cmd_res)
       end
 
-      topic = topic:match(mq_prefix .. '/(.+)') or topic
-      mq_data[#mq_data + 1] = { mq_prefix .. '/responses/' .. topic, cmd_res }
+      mq_data[#mq_data + 1] = { mq_prefix .. '/responses/' .. part, cmd_res }
       flush_data()
     end
 
@@ -85,6 +84,7 @@ mq:on("message", function(conn, topic, data)
   end
 
   cmd = nil
+  part = nil
   collectgarbage()
 
   if data ~= nil then
