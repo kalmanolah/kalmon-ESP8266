@@ -75,7 +75,7 @@ mq:on("message", function(conn, topic, data)
         cmd_res = cjson.encode(cmd_res)
       end
 
-      mq_data[#mq_data + 1] = { topic .. '/responses', cmd_res }
+      mq_data[#mq_data + 1] = { '/responses' .. topic, cmd_res }
       flush_data()
     end
 
