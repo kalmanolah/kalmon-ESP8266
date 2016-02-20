@@ -14,7 +14,6 @@ obj._command_handlers = function()
 
   handlers['/ping'] = function(evt)
     return {
-      rid = evt.data.rid or nil,
       node = mq_id,
     }
   end

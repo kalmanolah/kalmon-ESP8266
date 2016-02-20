@@ -68,11 +68,11 @@ mq:on("message", function(conn, topic, data)
 
     if cmd_res ~= nil then
       if type(cmd_res) == 'table' then
-        cmd_res = cjson.encode(cmd_res)
-
-        if cmd_evt.data.rid then
+        if cmd_evt.data and cmd_evt.data.rid then
           cmd_res.rid = cmd_evt.data.rid
         end
+
+        cmd_res = cjson.encode(cmd_res)
       end
 
       mq_data[#mq_data + 1] = { topic .. '/responses', cmd_res }
