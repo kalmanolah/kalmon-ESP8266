@@ -54,6 +54,7 @@ end)
 
 mq:on("message", function(conn, topic, data)
   print("MQTT: Received, topic:", topic)
+
   local part = topic:sub(1, #mq_prefix + 1) == mq_prefix .. '/' and topic:sub(#mq_prefix + 1) or topic
   local cmd = part:match('/commands/(.+)') or part
 
@@ -74,7 +75,7 @@ mq:on("message", function(conn, topic, data)
         cmd_res = cjson.encode(cmd_res)
       end
 
-      mq_data[#mq_data + 1] = { mq_prefix .. '/responses/' .. part, cmd_res }
+      mq_data[#mq_data + 1] = { mq_prefix .. '/responses' .. part, cmd_res }
       flush_data()
     end
 
