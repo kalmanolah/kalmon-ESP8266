@@ -75,7 +75,8 @@ mq:on("message", function(conn, topic, data)
         cmd_res = cjson.encode(cmd_res)
       end
 
-      mq_data[#mq_data + 1] = { mq_prefix .. '/responses' .. cmd, cmd_res }
+      topic = topic:match(mq_prefix .. '(/.+)') or topic
+      mq_data[#mq_data + 1] = { mq_prefix .. '/responses' .. topic, cmd_res }
       flush_data()
     end
 
