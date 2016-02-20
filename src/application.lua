@@ -12,7 +12,7 @@ local queue_report = nil
 local send_report = nil
 local flush_data = nil
 
-local mq_id = "ESP-" .. node.chipid()
+mq_id = "ESP-" .. node.chipid()
 local mq_prefix = "/nodes/" .. mq_id
 local mq = mqtt.Client(mq_id, 120, cfg.data.mqtt_user, cfg.data.mqtt_password)
 local mq_connected = false
@@ -35,8 +35,12 @@ mq:on("connect", function(conn)
 
   -- Subscribe to all command topics
   for topic, handler in pairs(mq_cmds) do
+    if topic[1] ~= '/' then
+      topic = mq_prefix .. '/commands/' .. topic
+    end
+
     print('MQTT: Subscribing to topic:', topic)
-    mq:subscribe(mq_prefix .. '/commands' .. topic, 0, function(conn) end)
+    mq:subscribe(topic, 0, function(conn) end)
   end
 
   send_report()
@@ -52,7 +56,7 @@ mq:on("message", function(conn, topic, data)
   print("MQTT: Received, topic:", topic)
 
   -- If this is a command, try to have it handled
-  local cmd = topic:match('/commands(/.+)')
+  local cmd = topic:match('/commands/(.+)') or topic
 
   if cmd ~= nil and mq_cmds[cmd] then
     print('CMD: Handling command:', cmd)
@@ -63,7 +67,15 @@ mq:on("message", function(conn, topic, data)
     local cmd_res = mq_cmds[cmd](cmd_evt)
 
     if cmd_res ~= nil then
-      mq_data[#mq_data + 1] = { '/responses' .. cmd, cmd_res }
+      if type(cmd_res) == 'table' then
+        cmd_res = cjson.encode(cmd_res)
+
+        if cmd_evt.data.rid then
+          cmd_res.rid = cmd_evt.data.rid
+        end
+      end
+
+      mq_data[#mq_data + 1] = { topic .. '/responses', cmd_res }
       flush_data()
     end
 
@@ -106,7 +118,7 @@ flush_data = function(callback)
   else
     local d = mq_data[mq_data_ptr]
 
-    mq:publish(mq_prefix .. d[1], d[2], 0, 0, function(conn)
+    mq:publish(d[1], d[2], 0, 0, function(conn)
       flush_data(callback)
     end)
 

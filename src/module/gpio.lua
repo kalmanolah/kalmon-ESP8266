@@ -4,7 +4,7 @@ local obj = {}
 obj._command_handlers = function()
   local handlers = {}
 
-  handlers['/gpio/control'] = function (evt)
+  handlers['gpio/control'] = function (evt)
     local pin = evt.data.pin
     local state = evt.data.state == true and gpio.HIGH or gpio.LOW
 

@@ -153,7 +153,7 @@ obj._command_handlers = function()
 
   local handlers = {}
 
-  handlers['/ws2812/control'] = function (evt)
+  handlers['ws2812/control'] = function (evt)
     local hsi = {
       sess.ws2812_buffer[1][1],
       sess.ws2812_buffer[1][2],
