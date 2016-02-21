@@ -45,9 +45,16 @@ obj._command_handlers = function()
   end
 
   handlers['files/create'] = function(evt)
-    file.open(evt.data.file, "w+")
+    local offset = 0
+    local mode = offset == 0 and 'w+' or 'w'
+
+    file.open(evt.data.file, mode)
+    file.seek('set', offset0)
     file.write(evt.data.content)
     file.close()
+
+    local offset = nil
+    local mode = nil
   end
 
   return handlers
