@@ -45,11 +45,11 @@ obj._command_handlers = function()
   end
 
   handlers['files/create'] = function(evt)
-    local offset = 0
+    local offset = evt.data.offset or 0
     local mode = offset == 0 and 'w+' or 'w'
 
     file.open(evt.data.file, mode)
-    file.seek('set', offset0)
+    file.seek('set', offset)
     file.write(evt.data.content)
     file.close()
 
