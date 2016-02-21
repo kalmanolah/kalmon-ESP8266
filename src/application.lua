@@ -64,7 +64,7 @@ mq:on("message", function(conn, topic, data)
       data = cjson.decode(data)
     }
 
-    local cmd_res = mq_cmds[cmd](cmd_evt)
+    local cmd_res = mq_cmds[cmd](cmd_evt) or {}
 
     if cmd_res ~= nil then
       if type(cmd_res) == 'table' then
