@@ -46,7 +46,7 @@ obj._command_handlers = function()
 
   handlers['files/create'] = function(evt)
     local offset = evt.data.offset or 0
-    local mode = offset == 0 and 'w+' or 'w'
+    local mode = offset == 0 and 'w+' or 'a'
 
     file.open(evt.data.file, mode)
     file.seek('set', offset)
