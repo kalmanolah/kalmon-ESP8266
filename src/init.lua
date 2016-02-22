@@ -118,7 +118,7 @@ wifi.setmode(wifi.STATIONAP)
 triggerModules('_init')
 
 for k, v in pairs(cfg.data) do print(k .. ": " .. tostring(v)) end
-sess = {} -- SESSion data..
+sess = {} -- session data..
 
 gpio.mode(cfg.data.cfg_pin, gpio.INPUT)
 local tries = 0
