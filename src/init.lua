@@ -109,7 +109,7 @@ end
 compileAndRemoveLuaFiles()
 loadModules()
 
-compileAndRemoveFile = nil
+-- compileAndRemoveFile = nil
 compileAndRemoveLuaFiles = nil
 loadModules = nil
 collectgarbage()
