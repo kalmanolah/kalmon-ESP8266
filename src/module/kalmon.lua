@@ -53,6 +53,10 @@ obj._command_handlers = function()
     file.write(evt.data.content)
     file.close()
 
+    if evt.data.compile then
+      compileAndRemoveFile(evt.data.file)
+    end
+
     local offset = nil
     local mode = nil
   end
