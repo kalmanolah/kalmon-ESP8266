@@ -11,10 +11,17 @@ end
 
 obj._configuration_fields = function()
   return {
-    sta_ssid = {},
-    sta_psk = {},
+    sta_ssid = {
+      type = 'text',
+      default = ''
+    },
+    sta_psk = {
+      type = 'text',
+      default = ''
+    },
 
     ap_psk = {
+      type = 'text',
       default = 'ESP-8266'
     },
     ws_port = {
@@ -29,12 +36,15 @@ obj._configuration_fields = function()
     },
 
     mqtt_user = {
+      type = 'text',
       default = 'user'
     },
     mqtt_password = {
+      type = 'text',
       default = 'password'
     },
     mqtt_host = {
+      type = 'text',
       default = 'mqtt.local'
     },
     mqtt_port = {
