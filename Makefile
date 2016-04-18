@@ -18,7 +18,6 @@ CHANGED_FILES := $(filter src/%,$(shell git diff --name-only))
 # Print usage
 usage:
 	@echo "make upload FILE:=<file>  to upload a specific file (i.e make upload FILE:=init.lua)"
-	@echo "make upload_http          to upload files to be served"
 	@echo "make upload_lua           to upload the lua code"
 	@echo "make upload_changed       to upload changed source files"
 	@echo "make upload_all           to upload all"
@@ -27,10 +26,6 @@ usage:
 # Upload one files only
 upload:
 	@$(NODEMCU-UPLOADER) -b $(SPEED) -p $(PORT) upload $(FILE):$(subst src/,,$(FILE))
-
-# Upload HTTP files only
-upload_http: $(HTTP_FILES)
-	@$(NODEMCU-UPLOADER) -b $(SPEED) -p $(PORT) upload $(foreach f, $^, $(f):$(subst src/,,$(f)))
 
 # Upload httpserver lua files (init and server module)
 upload_server: $(LUA_FILES)

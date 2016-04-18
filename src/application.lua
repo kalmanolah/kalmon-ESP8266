@@ -17,9 +17,6 @@ local mq_prefix = "/nodes/" .. mq_id
 local mq = mqtt.Client(mq_id, 120, cfg.data.mqtt_user, cfg.data.mqtt_password)
 local mq_connected = false
 
-mq_cmds = triggerModules('_command_handlers')
-mq_cmds = tablesMerge(mq_cmds)
-
 mq_data = {}
 mq_data_ptr = 0
 mq_report_step = 0
@@ -34,7 +31,7 @@ mq:on("connect", function(conn)
   tmr.stop(0)
 
   -- Subscribe to all command topics
-  for topic, handler in pairs(mq_cmds) do
+  for topic, handler in pairs(cmds) do
     if topic:sub(1, 1) ~= '/' then
       topic = mq_prefix .. '/commands/' .. topic
     end
@@ -57,34 +54,16 @@ mq:on("message", function(conn, topic, data)
 
   local part = topic:sub(1, #mq_prefix + 1) == mq_prefix .. '/' and topic:sub(#mq_prefix + 1) or topic
   local cmd = part:match('/commands/(.+)') or part
+  local res = handleCmd(cmd, data)
 
-  if cmd ~= nil and mq_cmds[cmd] then
-    print('CMD: Handling command:', cmd)
-    local cmd_evt = {
-      data = cjson.decode(data)
-    }
-
-    local cmd_res = mq_cmds[cmd](cmd_evt) or {}
-
-    if cmd_res ~= nil then
-      if type(cmd_res) == 'table' then
-        if cmd_evt.data and cmd_evt.data.rid then
-          cmd_res.rid = cmd_evt.data.rid
-        end
-
-        cmd_res = cjson.encode(cmd_res)
-      end
-
-      mq_data[#mq_data + 1] = { mq_prefix .. '/responses' .. part, cmd_res }
-      flush_data()
-    end
-
-    cmd_res = nil
-    cmd_evt = nil
+  if res ~= nil then
+    mq_data[#mq_data + 1] = { mq_prefix .. '/responses' .. part, res }
+    flush_data()
   end
 
   cmd = nil
   part = nil
+  res = nil
   collectgarbage()
 
   if data ~= nil then

@@ -5,22 +5,21 @@ Fun little ESP8266 project.
 Working:
 
 * Mode auto-detection
-* Webinterface for setting configuration
 * Initial module system
 * Configuration parameter registration
 * Step-by-step reporting
 * DHT module
 * Battery module
+* Command handlers
+* OTA updating
+* Restart command
+* Node info command
+* Configuration commands
 
 TODO:
 
-* Command handlers
-* OTA updating of files
-* Restart command
-* Node info command
 * Logging over MQTT
-* Configuration commands
-
+* Write documentation
 
 ### Installation
 
@@ -34,5 +33,4 @@ make upload_all PORT=/dev/ttyAMA0
 
 ### Links/Attributions
 
-* [nodemcu-httpserver](https://github.com/marcoskirsch/nodemcu-httpserver)
 * [nodemcu-uploader](https://github.com/kmpm/nodemcu-uploader)
