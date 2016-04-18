@@ -28,7 +28,7 @@ This is just an example of how you'd upload this stuff.
 
 ```
 pip install nodemcu-uploader
-git clone git clone https://github.com/kalmanolah/kalmon-ESP8266
+git clone https://github.com/kalmanolah/kalmon-ESP8266
 make upload_all PORT=/dev/ttyAMA0
 ```
 
