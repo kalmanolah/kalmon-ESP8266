@@ -12,9 +12,8 @@ local queue_report = nil
 local send_report = nil
 local flush_data = nil
 
-mq_id = "ESP-" .. node.chipid()
-local mq_prefix = "/nodes/" .. mq_id
-local mq = mqtt.Client(mq_id, 120, cfg.data.mqtt_user, cfg.data.mqtt_password)
+local mq_prefix = "/nodes/" .. node_id
+local mq = mqtt.Client(node_id, 120, cfg.data.mqtt_user, cfg.data.mqtt_password)
 local mq_connected = false
 
 mq_data = {}

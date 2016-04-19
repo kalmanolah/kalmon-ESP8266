@@ -69,6 +69,7 @@ compileAndRemoveLuaFiles = nil
 collectgarbage()
 
 sess = {}
+node_id = "ESP-" .. node.chipid()
 wifi.setmode(wifi.STATIONAP)
 dofile('modules.lc')
 dofile('commands.lc')

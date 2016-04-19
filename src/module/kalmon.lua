@@ -14,7 +14,7 @@ obj._command_handlers = function()
 
   handlers['/ping'] = function(evt)
     return {
-      node = mq_id,
+      node = node_id,
     }
   end
 
@@ -25,7 +25,7 @@ obj._command_handlers = function()
     end
 
     return {
-      node = node.info(),
+      node = node_id,
       files = files,
       cfg = cfg.data,
     }
