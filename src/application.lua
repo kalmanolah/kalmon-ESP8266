@@ -1,10 +1,10 @@
 if not cfg.data.sta_ssid then
-  print('Wifi: Missing config')
+  print('Wifi: No config')
   return
 end
 
 if (not cfg.data.mqtt_user) or (not cfg.data.mqtt_password) then
-  print('MQTT: Missing config')
+  print('MQTT: No config')
   return
 end
 
@@ -25,7 +25,6 @@ mq:lwt("/lwt", "offline", 0, 0)
 mq:on("connect", function(conn)
   print("MQTT: Connected")
   mq_connected = true
-  tmr.stop(0)
 
   -- Subscribe to all command topics
   for topic, handler in pairs(cmds) do
@@ -33,7 +32,7 @@ mq:on("connect", function(conn)
       topic = mq_prefix .. '/commands/' .. topic
     end
 
-    print('MQTT: Subscribing to topic:', topic)
+    print('MQTT: Subscribing, topic:', topic)
     mq:subscribe(topic, 0, function(conn) end)
   end
 
@@ -71,9 +70,7 @@ end)
 wifi.setphymode(wifi.PHYMODE_N)
 wifi.setmode(wifi.STATION)
 wifi.sta.eventMonReg(wifi.STA_GOTIP, function()
-  -- wifi.sta.eventMonReg(wifi.STA_GOTIP, "unreg")
   wifi.sta.eventMonStop("unreg all")
-
   print("WIFI: Connected")
   send_report()
 end)
@@ -122,27 +119,29 @@ queue_report = function()
 end
 
 send_report = function()
-  if not wifi.sta.getip() then
-    print('Report: Skipping, no Wifi')
+  if not cfg.data.sleep then
     queue_report()
-  elseif not mq_connected then
-    print('Report: Skipping, no MQTT')
-    mq:connect(cfg.data.mqtt_host, cfg.data.mqtt_port, cfg.data.mqtt_secure)
+  end
 
-    -- Wait a second for MQTT connection
-    tmr.alarm(0, 1000, 0, function()
+  if not wifi.sta.getip() then
+    print('Report: No Wifi')
+    if cfg.data.sleep then
       queue_report()
-    end)
+    end
+  elseif not mq_connected then
+    print('Report: No MQTT')
+    mq:connect(cfg.data.mqtt_host, cfg.data.mqtt_port, cfg.data.mqtt_secure)
   else
     print('Report: Sending..')
     mq_data = triggerModules('_report_data')
     mq_data = tablesMerge(mq_data)
 
     collectgarbage()
-
     flush_data(function()
       print('Report: Finished')
-      queue_report()
+      if cfg.data.sleep then
+        queue_report()
+      end
     end)
   end
 end
