@@ -20,6 +20,9 @@ obj._command_handlers = function()
 
   handlers['info'] = function(evt)
     local files = {}
+    local v_major, v_minor, v_dev, chip_id, flash_id, flash_size, flash_mode, flash_speed = node.info()
+    local fs_r, fs_u, fs_t = file.fsinfo()
+
     for f, s in pairs(file.list()) do
       files[#files + 1] = {f, s}
     end
@@ -28,6 +31,15 @@ obj._command_handlers = function()
       node = node_id,
       files = files,
       cfg = cfg.data,
+      stats = {
+        version = v_major..'.'..v_minor..'.'..v_dev,
+        chip_id = chip_id,
+        flash_id = flash_id,
+        heap_left = node.heap(),
+        fs_left = fs_r,
+        fs_used = fs_u,
+        fs_total = fs_t
+      }
     }
   end
 
