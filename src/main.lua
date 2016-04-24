@@ -1,14 +1,10 @@
 -- Attempts to compile and remove a file if it exists
 compileAndRemoveFile = function(f)
   if file.open(f) then
-    file.close()
-
     print('Compiling:', f)
+    file.close()
     node.compile(f)
-
-    print('Removing:', f)
     file.remove(f)
-
     collectgarbage()
   end
 end

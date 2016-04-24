@@ -18,10 +18,8 @@ local mq_connected = false
 
 mq_data = {}
 mq_data_ptr = 0
-mq_report_step = 0
 
 -- Register MQTT event handlers
--- See http://www.hivemq.com/blog/mqtt-essentials-part-9-last-will-and-testament
 mq:lwt("/lwt", "offline", 0, 0)
 
 mq:on("connect", function(conn)

@@ -1,6 +1,6 @@
-if file.open('main.lc') then
-  file.close('main.lc')
-  dofile('main.lc')
-else
+if file.open('main.lua') then
+  file.close()
   dofile('main.lua')
+else
+  dofile('main.lc')
 end
