@@ -67,18 +67,6 @@ mq:on("message", function(conn, topic, data)
   end
 end)
 
-wifi.setphymode(wifi.PHYMODE_N)
-wifi.setmode(wifi.STATION)
-wifi.sta.eventMonReg(wifi.STA_GOTIP, function()
-  wifi.sta.eventMonStop("unreg all")
-  print("WIFI: Connected")
-  send_report()
-end)
-
-print("WIFI: Connecting..")
-wifi.sta.eventMonStart()
-wifi.sta.config(cfg.data.sta_ssid, cfg.data.sta_psk)
-
 flush_data = function(callback)
   mq_data_ptr = mq_data_ptr + 1
 
@@ -125,9 +113,7 @@ send_report = function()
 
   if not wifi.sta.getip() then
     print('Report: No Wifi')
-    if cfg.data.sleep then
-      queue_report()
-    end
+    wifi.sta.connect()
   elseif not mq_connected then
     print('Report: No MQTT')
     mq:connect(cfg.data.mqtt_host, cfg.data.mqtt_port, cfg.data.mqtt_secure)
@@ -145,3 +131,18 @@ send_report = function()
     end)
   end
 end
+
+wifi.setphymode(wifi.PHYMODE_N)
+wifi.setmode(wifi.STATION)
+wifi.sta.eventMonReg(wifi.STA_GOTIP, function()
+  -- wifi.sta.eventMonStop(1)
+  print("WIFI: Connected")
+  send_report()
+end)
+wifi.sta.eventMonReg(wifi.STA_CONNECTING, function()
+  print("WIFI: Connecting..")
+end)
+
+wifi.sta.eventMonStart(100)
+wifi.sta.config(cfg.data.sta_ssid, cfg.data.sta_psk)
+send_report()
