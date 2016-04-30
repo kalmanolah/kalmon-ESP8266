@@ -13,11 +13,23 @@ obj._configuration_fields = function()
   return {
     sta_ssid = {
       type = 'text',
-      default = ''
+      default = false
     },
     sta_psk = {
       type = 'text',
-      default = ''
+      default = false
+    },
+    sta_ip = {
+      type = 'text',
+      default = false
+    },
+    sta_netmask = {
+      type = 'text',
+      default = false
+    },
+    sta_gateway = {
+      type = 'text',
+      default = false
     },
 
     ap_psk = {
@@ -76,7 +88,7 @@ obj.fields = function()
   local gathered = triggerModules('_configuration_fields')
   local merged = tablesMerge(gathered)
 
-  local gathered = nil
+  gathered = nil
   collectgarbage()
 
   return merged
@@ -85,11 +97,10 @@ end
 -- Load cfg
 obj.load = function()
   if file.open(cfg.file, "r") then
-    local json = require "cjson"
     local content = file.read()
 
     if content ~= nil and content ~= "null" then
-      cfg.data = json.decode(content)
+      cfg.data = cjson.decode(content)
     end
 
     file.close()
@@ -105,18 +116,17 @@ obj.load = function()
   end
 
   fields = nil
-  json = nil
   content = nil
 
   collectgarbage()
 end
 
 obj.save = function()
-  local json = require "cjson"
   file.open(cfg.file, "w+")
-  local content = json.encode(cfg.data)
+  local content = cjson.encode(cfg.data)
   file.write(content)
   file.close()
+  content = nil
 
   collectgarbage()
 end

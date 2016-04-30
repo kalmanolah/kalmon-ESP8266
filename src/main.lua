@@ -76,16 +76,17 @@ local max = 3
 
 tmr.alarm(0, 1000, 1, function()
   print('Mode: Determining..')
-  local cfg_pin = gpio.read(cfg.data.cfg_pin)
+  local state = gpio.read(cfg.data.cfg_pin)
   tries = tries + 1
 
-  if cfg_pin == gpio.LOW or tries == max then
-    local tries = nil
-    local max = nil
+  if state == gpio.LOW or tries == max then
+    tries = nil
+    max = nil
+    state = nil
     tmr.stop(0)
     collectgarbage()
 
-    if cfg_pin == gpio.LOW then
+    if state == gpio.LOW then
       print('Mode: Configure')
       dofile('configure.lc')
     else

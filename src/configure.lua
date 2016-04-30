@@ -1,4 +1,4 @@
-ap_cfg = {
+local ap_cfg = {
   ssid = "ESP-" .. node.chipid(),
   auth = wifi.ap.AUTH_WPA2_PSK,
   pwd = cfg.data.ap_psk

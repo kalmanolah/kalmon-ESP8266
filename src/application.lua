@@ -3,7 +3,7 @@ if not cfg.data.sta_ssid then
   return
 end
 
-if (not cfg.data.mqtt_user) or (not cfg.data.mqtt_password) then
+if not (cfg.data.mqtt_user and cfg.data.mqtt_password) then
   print('MQTT: No config')
   return
 end
@@ -142,6 +142,14 @@ end)
 wifi.sta.eventMonReg(wifi.STA_CONNECTING, function()
   print("WIFI: Connecting..")
 end)
+
+if cfg.data.sta_ip and cfg.data.sta_gateway and cfg.data.sta_netmask then
+  wifi.sta.setip({
+    ip = cfg.data.sta_ip,
+    netmask = cfg.data.sta_netmask,
+    gateway = cfg.data.sta_gateway
+  })
+end
 
 wifi.sta.eventMonStart(100)
 wifi.sta.config(cfg.data.sta_ssid, cfg.data.sta_psk)
