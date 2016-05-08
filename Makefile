@@ -23,12 +23,12 @@ usage:
 
 # Upload one files only
 upload:
-	@$(NODEMCU-UPLOADER) -b $(SPEED) -p $(PORT) upload $(FILE):$(subst src/,,$(FILE))
+	@cd src && $(NODEMCU-UPLOADER) -b $(SPEED) -p $(PORT) upload $(FILE) && cd ../
 
 # Upload change source files
 upload_changed: $(CHANGED_FILES)
-	@$(NODEMCU-UPLOADER) -b $(SPEED) -p $(PORT) upload $(foreach f, $^, $(f):$(subst src/,,$(f)))
+	@cd src && $(NODEMCU-UPLOADER) -b $(SPEED) -p $(PORT) upload $(foreach f, $^, $(f)) && cd ../
 
 # Upload all
 upload_all: $(ALL_FILES)
-	@$(NODEMCU-UPLOADER) -b $(SPEED) -p $(PORT) upload $(foreach f, $^, $(f):$(subst src/,,$(f)))
+	@cd src && $(NODEMCU-UPLOADER) -b $(SPEED) -p $(PORT) upload $(foreach f, $^, $(f)) && cd ../

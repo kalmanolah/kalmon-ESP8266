@@ -82,7 +82,6 @@ tmr.alarm(0, 1000, 1, function()
   if state == gpio.LOW or tries == max then
     tries = nil
     max = nil
-    state = nil
     tmr.stop(0)
     collectgarbage()
 
