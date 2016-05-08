@@ -131,8 +131,4 @@ obj.save = function()
   collectgarbage()
 end
 
-return function(fnc, args)
-  if obj[fnc] then
-    return obj[fnc](args)
-  end
-end
+return makeModule(obj)

@@ -9,8 +9,4 @@ obj._report_data = function()
   }
 end
 
-return function(fnc, args)
-  if obj[fnc] then
-    return obj[fnc](args)
-  end
-end
+return makeModule(obj)

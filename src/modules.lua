@@ -41,6 +41,13 @@ triggerModules = function(ev)
   return results
 end
 
+-- Create module from table
+makeModule = function(obj)
+  return function(func, args)
+    return obj[func] and obj[func](args)
+  end
+end
+
 loadModules()
 loadModules = nil
 triggerModules('_init')

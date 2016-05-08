@@ -227,8 +227,4 @@ obj._command_handlers = function()
   return handlers
 end
 
-return function(fnc, args)
-  if obj[fnc] then
-    return obj[fnc](args)
-  end
-end
+return makeModule(obj)
