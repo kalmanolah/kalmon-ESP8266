@@ -119,17 +119,14 @@ send_report = function()
     mq:connect(cfg.data.mqtt_host, cfg.data.mqtt_port, cfg.data.mqtt_secure)
   else
     print('Report: Sending..')
-    local data = triggerModules('_report_data')
-    data = tablesMerge(data)
+    mq_data = triggerModules('_report_data')
+    mq_data = tablesMerge(mq_data)
 
-    mq_data = {}
-    for i, v in pairs(data) do
-      mq_data[mq_prefix .. i] = v
+    for _, v in pairs(mq_data) do
+      v[1] = mq_prefix .. v[1]
     end
 
-    data = nil
     collectgarbage()
-
     flush_data(function()
       print('Report: Finished')
       if cfg.data.sleep then
