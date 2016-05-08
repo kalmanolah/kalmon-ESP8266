@@ -122,6 +122,11 @@ send_report = function()
     mq_data = triggerModules('_report_data')
     mq_data = tablesMerge(mq_data)
 
+    for i, v in pairs(mq_data) do
+      mq_data[i] = nil
+      mq_data[mq_prefix .. i] = v
+    end
+
     collectgarbage()
     flush_data(function()
       print('Report: Finished')

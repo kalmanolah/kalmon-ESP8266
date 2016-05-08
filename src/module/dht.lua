@@ -22,8 +22,8 @@ obj._report_data = function()
 
   if status == dht.OK then
     return {
-      { "/sensors/temperature", string.format("%d.%03d", math.floor(temp), temp_dec) },
-      { "/sensors/humidity", string.format("%d.%03d", math.floor(hum), hum_dec) }
+      { "/sensors/dht/temperature", string.format("%d.%03d", math.floor(temp), temp_dec) },
+      { "/sensors/dht/humidity", string.format("%d.%03d", math.floor(hum), hum_dec) }
     }
   else
     if status == dht.ERROR_CHECKSUM then
