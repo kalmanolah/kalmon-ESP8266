@@ -1,34 +1,37 @@
 # Taken from https://github.com/marcoskirsch/nodemcu-httpserver/blob/master/Makefile
-######################################################################
-# User configuration
-######################################################################
+
 # Path to nodemcu-uploader (https://github.com/kmpm/nodemcu-uploader)
 NODEMCU-UPLOADER=nodemcu-uploader
 # Serial port
 PORT?=/dev/ttyUSB0
 SPEED?=9600
 
-######################################################################
-# End of user config
-######################################################################
+BASE_FILES := $(shell find src/ -maxdepth 1 -type f -name '*.lua')
+BASE_FILES := $(BASE_FILES) src/module/kalmon.lua src/module/settings.lua
 ALL_FILES := $(shell find src/ -type f -name '*.lua')
-CHANGED_FILES := $(filter src/%,$(shell git diff --name-only))
 
 # Print usage
 usage:
-	@echo "make upload FILE:=<file>  to upload a specific file (i.e make upload FILE:=src/init.lua)"
-	@echo "make upload_changed       to upload changed source files"
-	@echo "make upload_all           to upload all"
+	@echo "make upload FILE=<file>           to upload a specific file (i.e make upload FILE=src/init.lua)"
+	@echo "make upload FILES='<file> <file>' to upload multiple files (i.e make upload FILES='src/init.lua src/main.lua')"
+	@echo "make upload_base                  to upload base (framework + core modules)"
+	@echo "make upload_all                   to upload all (framework + all modules"
 	@echo $(TEST)
 
-# Upload one files only
+# Upload one file only
 upload:
-	@cd src && $(NODEMCU-UPLOADER) -b $(SPEED) -p $(PORT) upload $(FILE) && cd ../
+	@cd src && $(NODEMCU-UPLOADER) -b $(SPEED) -p $(PORT) upload $(subst src/, , $(FILE)) && cd ../
 
-# Upload change source files
-upload_changed: $(CHANGED_FILES)
-	@cd src && $(NODEMCU-UPLOADER) -b $(SPEED) -p $(PORT) upload $(foreach f, $^, $(f)) && cd ../
+# Upload multi
+upload_multi: $(FILES)
+	@for SINGLE_FILE in $^; do \
+		$(MAKE) upload FILE=$$SINGLE_FILE; \
+	done
+
+# Upload base
+upload_base: $(BASE_FILES)
+	$(MAKE) upload_multi FILES='$^'
 
 # Upload all
 upload_all: $(ALL_FILES)
-	@cd src && $(NODEMCU-UPLOADER) -b $(SPEED) -p $(PORT) upload $(foreach f, $^, $(f)) && cd ../
+	$(MAKE) upload_multi FILES='$^'
