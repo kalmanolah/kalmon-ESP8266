@@ -116,7 +116,7 @@ send_report = function()
     wifi.sta.connect()
   elseif not mq_connected then
     print('Report: No MQTT')
-    mq:connect(cfg.data.mqtt_host, cfg.data.mqtt_port, cfg.data.mqtt_secure)
+    mq:connect(cfg.data.mqtt_host, cfg.data.mqtt_port, cfg.data.mqtt_secure and 1 or 0)
   else
     print('Report: Sending..')
     mq_data = triggerModules('_report_data')
