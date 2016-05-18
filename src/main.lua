@@ -70,27 +70,33 @@ wifi.setmode(wifi.STATIONAP)
 dofile('modules.lc')
 dofile('commands.lc')
 
-gpio.mode(cfg.data.cfg_pin, gpio.INPUT)
-local tries = 0
-local max = 3
+-- Dsleep booting: no need to determine mode
+local res, ext_res = node.bootreason()
+if res == 2 then
+  dofile('application.lc')
+else
+  gpio.mode(cfg.data.cfg_pin, gpio.INPUT)
+  local tries = 0
+  local max = 3
 
-tmr.alarm(0, 1000, 1, function()
-  print('Mode: Determining..')
-  local state = gpio.read(cfg.data.cfg_pin)
-  tries = tries + 1
+  tmr.alarm(0, 1000, 1, function()
+    print('Mode: Determining..')
+    local state = gpio.read(cfg.data.cfg_pin)
+    tries = tries + 1
 
-  if state == gpio.LOW or tries == max then
-    tries = nil
-    max = nil
-    tmr.stop(0)
-    collectgarbage()
+    if state == gpio.LOW or tries == max then
+      tries = nil
+      max = nil
+      tmr.stop(0)
+      collectgarbage()
 
-    if state == gpio.LOW then
-      print('Mode: Configure')
-      dofile('configure.lc')
-    else
-      print('Mode: Application')
-      dofile('application.lc')
+      if state == gpio.LOW then
+        print('Mode: Configure')
+        dofile('configure.lc')
+      else
+        print('Mode: Application')
+        dofile('application.lc')
+      end
     end
-  end
-end)
+  end)
+end
