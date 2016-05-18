@@ -19,7 +19,7 @@ local generate_payload = function (cmd)
   local data = struct.pack('B', cmd)
 
   if cmd == CMD_STATUS then
-    data = data .. struct.pack('c5', tostring(tmr.now()))
+    data = data .. struct.pack('c5', tostring(tmr.now()):sub(-5))
   end
 
   return encode_payload(data)
