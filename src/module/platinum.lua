@@ -16,7 +16,7 @@ local encode_payload = function (data)
 end
 
 local generate_payload = function (cmd)
-  local data = struct.pack('B', cmd)
+  local data = struct.pack('c1', cmd)
 
   if cmd == CMD_STATUS then
     data = data .. struct.pack('c5', tostring(tmr.now()):sub(-5))
@@ -26,15 +26,15 @@ local generate_payload = function (cmd)
 end
 
 local decode_payload = function (payload)
-  local stx, len, data, crc = struct.unpack('c2Bc0I2', payload)
+  local stx, data, crc = struct.unpack('c2Bc0I2', payload)
   local res = {
-    raw = payload
+    raw = payload,
     cmd = data:sub(1, 1)
   }
 
   -- Verify CRC
   if ow.crc16(payload:sub(1, -3)) == crc then
-    if cmd == CMD_STATUS then
+    if res.cmd == CMD_STATUS then
       res.hour, res.minute, res.second,
       res.status, res.event,
       res.voltage_dc, res.current_dc, res.power_dc,
@@ -60,9 +60,13 @@ obj._report_data = function()
     uart.on('data')
   end, 0)
 
-  return {
-    { "/platinum/bus/status", sess.platinum_buffer }
-  }
+  if #sess.platinum_buffer then
+    return {
+      { "/platinum/status", sess.platinum_buffer }
+    }
+  end
+
+  return nil
 end
 
 return makeModule(obj)

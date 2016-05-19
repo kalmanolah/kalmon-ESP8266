@@ -20,12 +20,12 @@ usage:
 
 # Upload one file only
 upload:
-	@cd src && $(NODEMCU-UPLOADER) -b $(SPEED) -p $(PORT) upload $(subst src/, , $(FILE)) && cd ../
+	@cd src && $(NODEMCU-UPLOADER) --baud $(SPEED) --port $(PORT) upload $(subst src/, , $(FILE)) && cd ../
 
 # Upload multi
 upload_multi: $(FILES)
 	@for SINGLE_FILE in $^; do \
-		$(MAKE) upload FILE=$$SINGLE_FILE; \
+	    $(MAKE) upload FILE=$$SINGLE_FILE; \
 	done
 
 # Upload base
