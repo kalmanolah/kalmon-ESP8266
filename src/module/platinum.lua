@@ -50,7 +50,7 @@ end
 
 obj._init = function ()
   sess.platinum_buffer = {}
-  uart.setup(0, 19200, 8, uart.PARITY_NONE, uart.STOPBITS_1, 1)
+  uart.setup(0, 19200, 8, uart.PARITY_NONE, uart.STOPBITS_1, 0)
 end
 
 obj._report_data = function()
