@@ -1,4 +1,6 @@
-if file.exists('main.lua') then
-  node.compile('main.lua')
+if file.open('main.lua') then
+  file.close()
+  dofile('main.lua')
+else
+  dofile('main.lc')
 end
-dofile('main.lc')
