@@ -100,7 +100,7 @@ queue_report = function()
   else
     tmr.stop(0)
     tmr.alarm(0, cfg.data.report_interval * 1000, 0, function()
-      send_report()
+      node.task.post(0, send_report)
       collectgarbage()
     end)
   end
