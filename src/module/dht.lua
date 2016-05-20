@@ -1,17 +1,14 @@
--- This module adds reporting temperature and humidity readings
--- from a DHT temp/hum sensor to reports.
-local obj = {}
-
-obj._configuration_fields = function()
+-- This module adds reporting temperature and humidity readings from a DHT temp/hum sensor to reports.
+_k.on('_cfg.fields', function ()
   return {
     dht_pin = {
       type = 'number',
       default = false
     }
   }
-end
+end)
 
-obj._report_data = function()
+_k.on('_report', function ()
   if not cfg.data.dht_pin then
     return
   end
@@ -31,9 +28,5 @@ obj._report_data = function()
     elseif status == dht.ERROR_TIMEOUT then
       print("DHT Timeout.")
     end
-
-    return nil
   end
-end
-
-return makeModule(obj)
+end)

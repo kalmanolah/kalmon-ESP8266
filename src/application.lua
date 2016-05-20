@@ -27,7 +27,7 @@ mq:on("connect", function(conn)
   mq_connected = true
 
   -- Subscribe to all command topics
-  for topic, handler in pairs(cmds) do
+  for topic, handler in pairs(_k.cmds) do
     if topic:sub(1, 1) ~= '/' then
       topic = mq_prefix .. '/commands/' .. topic
     end
@@ -50,10 +50,10 @@ mq:on("message", function(conn, topic, data)
 
   local part = topic:sub(1, #mq_prefix + 1) == mq_prefix .. '/' and topic:sub(#mq_prefix + 1) or topic
   local cmd = part:match('/commands/(.+)') or part
-  local res = handleCmd(cmd, data)
+  local res = _k.handle(cmd, cjson.decode(data))
 
   if res ~= nil then
-    mq_data[#mq_data + 1] = { mq_prefix .. '/responses' .. part, res }
+    mq_data[#mq_data + 1] = { mq_prefix .. '/responses' .. part, cjson.encode(res) }
     flush_data()
   end
 
@@ -119,8 +119,7 @@ send_report = function()
     mq:connect(cfg.data.mqtt_host, cfg.data.mqtt_port, cfg.data.mqtt_secure and 1 or 0)
   else
     print('Report: Sending..')
-    mq_data = triggerModules('_report_data')
-    mq_data = tablesMerge(mq_data)
+    mq_data = tablesMerge(_k.emit('_report'))
 
     for _, v in pairs(mq_data) do
       v[1] = mq_prefix .. v[1]

@@ -60,17 +60,18 @@ tablesMerge = function(tbls)
 end
 
 compileAndRemoveLuaFiles()
--- compileAndRemoveFile = nil
 compileAndRemoveLuaFiles = nil
 collectgarbage()
 
-sess = {}
 node_id = "ESP-" .. node.chipid()
 wifi.setmode(wifi.STATIONAP)
-dofile('modules.lc')
-dofile('commands.lc')
+dofile('kalmon.lc')
 
--- Dsleep booting: no need to determine mode
+-- Init modules
+for _, f in pairs(getMatchedFiles('^module/.+%.lc')) do dofile(f) end
+_k.emit('_init')
+
+-- Determine mode (no need when dsleep booting)
 local res, ext_res = node.bootreason()
 if res == 2 then
   dofile('application.lc')

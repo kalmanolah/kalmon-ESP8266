@@ -11,19 +11,15 @@ wifi.ap.config(ap_cfg)
 ap_cfg = nil
 collectgarbage()
 
-srv = net.createServer(net.TCP)
+local srv = net.createServer(net.TCP)
 srv:listen(cfg.data.ws_port, function(conn)
   conn:on("receive", function(conn, payload)
     local data = cjson.decode(payload)
-    local res = handleCmd(data.cmd, data.data)
+    local res = _k.handle(data.cmd, cjson.decode(data.data))
 
     if res ~= nil then
-        conn:send(res)
+      conn:send(cjson.encode(res))
     end
-
-    data = nil
-    res = nil
-    collectgarbage()
   end)
 
   conn:on("sent", function(conn)
