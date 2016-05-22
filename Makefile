@@ -7,7 +7,7 @@ PORT?=/dev/ttyUSB0
 SPEED?=9600
 
 BASE_FILES := $(shell find src/ -maxdepth 1 -type f -name '*.lua')
-BASE_FILES := $(BASE_FILES) src/module/kalmon.lua src/module/settings.lua
+BASE_FILES := $(BASE_FILES) src/module/kalmon.lua
 ALL_FILES := $(shell find src/ -type f -name '*.lua')
 
 # Print usage
