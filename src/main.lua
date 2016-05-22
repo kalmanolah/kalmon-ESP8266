@@ -73,7 +73,7 @@ _k.emit('_init')
 
 -- Determine mode (no need when dsleep booting)
 local res, ext_res = node.bootreason()
-if res == 2 then
+if ext_res == 5 then
   dofile('application.lc')
 else
   gpio.mode(cfg.data.cfg_pin, gpio.INPUT)
