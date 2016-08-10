@@ -96,7 +96,7 @@ queue_report = function()
       mq:close()
     end
 
-    node.dsleep(cfg.data.report_interval * 1000 * 1000, 4)
+    node.dsleep(cfg.data.report_interval * 1000 * 1000)
   else
     tmr.stop(0)
     tmr.alarm(0, cfg.data.report_interval * 1000, 0, function()
@@ -135,7 +135,8 @@ send_report = function()
   end
 end
 
-wifi.setphymode(wifi.PHYMODE_N)
+wifi.sleeptype(wifi.MODEM_SLEEP)
+wifi.setphymode(wifi.PHYMODE_G)
 wifi.setmode(wifi.STATION)
 wifi.sta.eventMonReg(wifi.STA_GOTIP, function()
   -- wifi.sta.eventMonStop(1)
