@@ -28,6 +28,8 @@ ezoorp = {
 
     if r:byte(1) == 1 then
       r = r:sub(2)
+    elseif r:byte(1) == 255 then
+      r = nil
     end
 
     return r
@@ -55,7 +57,7 @@ end)
 
 _k.on('_report', function ()
   local r = ezoorp.cmd('R')
-  ezoorp.cmd('SLEEP')
+  -- ezoorp.cmd('SLEEP')
 
   if r ~= nil then
     return {{ "/sensors/ezoorp/orp", r }}
@@ -63,7 +65,7 @@ _k.on('_report', function ()
 end)
 
 _k.cmd('ezoorp/calibrate', function (e)
-  local v = e.value
+  local v = e.orp or 0
   ezoorp.cmd(string.format("Cal,%d.%03d", math.floor(v / 1000), v - ((v / 1000) * 1000)))
-  ezoorp.cmd('SLEEP')
+  -- ezoorp.cmd('SLEEP')
 end)

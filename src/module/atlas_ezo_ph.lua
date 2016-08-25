@@ -28,6 +28,8 @@ ezoph = {
 
     if r:byte(1) == 1 then
       r = r:sub(2)
+    elseif r:byte(1) == 255 then
+      r = nil
     end
 
     return r
@@ -55,7 +57,7 @@ end)
 
 _k.on('_report', function ()
   local r = ezoph.cmd('R')
-  ezoph.cmd('SLEEP')
+  -- ezoph.cmd('SLEEP')
 
   if r ~= nil then
     return {{ "/sensors/ezoph/ph", r }}
@@ -63,8 +65,9 @@ _k.on('_report', function ()
 end)
 
 _k.cmd('ezoph/calibrate', function (e)
-  local ph = e.ph or 7
+  local ph = e.ph or 7000
   local lvl = e.lvl or 'mid'
-  ezoph.cmd('Cal,'..lvl..','..ph..'.00')
-  ezoph.cmd('SLEEP')
+  ph = string.format("%d.%03d", math.floor(ph / 1000), ph - ((ph / 1000) * 1000))
+  ezoph.cmd('Cal,'..lvl..','..ph)
+  -- ezoph.cmd('SLEEP')
 end)
