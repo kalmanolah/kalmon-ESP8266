@@ -139,7 +139,8 @@ _k.cmd('/ping', function ()
   return {node = node_id}
 end)
 _k.cmd('restart', function ()
-  node.restart()
+  -- Delay a bit to allow for proper ACK
+  tmr.alarm(2, 1000, 0, node.restart)
 end)
 
 _k.cmd('cfg/set', function (e)

@@ -13,7 +13,7 @@ local send_report = nil
 local flush_data = nil
 
 local mq_prefix = "/nodes/" .. node_id
-local mq = mqtt.Client(node_id, 120, cfg.data.mqtt_user, cfg.data.mqtt_password)
+local mq = mqtt.Client(node_id, 120, cfg.data.mqtt_user, cfg.data.mqtt_password, 0)
 local mq_connected = false
 
 mq_data = {}
@@ -33,7 +33,7 @@ mq:on("connect", function(conn)
     end
 
     print('MQTT: Subscribing, topic:', topic)
-    mq:subscribe(topic, 0, function(conn) end)
+    mq:subscribe(topic, 1, function(conn) end)
   end
 
   send_report()
@@ -47,14 +47,13 @@ end)
 
 mq:on("message", function(conn, topic, data)
   print("MQTT: Received, topic:", topic)
-
   local part = topic:sub(1, #mq_prefix + 1) == mq_prefix .. '/' and topic:sub(#mq_prefix + 1) or topic
   local cmd = part:match('/commands/(.+)') or part
   local res = _k.handle(cmd, cjson.decode(data))
 
   if res ~= nil then
     mq_data[#mq_data + 1] = { mq_prefix .. '/responses' .. part, cjson.encode(res) }
-    flush_data()
+    if mq_data_ptr == 0 then flush_data() end
   end
 
   cmd = nil
