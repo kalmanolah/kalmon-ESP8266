@@ -57,7 +57,6 @@ end)
 
 queue_dsleep = function (init)
   local act, _ = tmr.state(1)
-
   if (not act) and (not init) then
     return
   end
@@ -137,10 +136,8 @@ end
 wifi.sta.eventMonStart(100)
 wifi.sta.config(cfg.data.sta_ssid, cfg.data.sta_psk, 1)
 
--- Start report timer if not sleeping
-if not cfg.data.sleep then
-  tmr.alarm(0, cfg.data.report_interval * 1000, tmr.ALARM_AUTO, function()
-    node.task.post(0, send_report)
-    collectgarbage()
-  end)
-end
+-- Start report timer
+tmr.alarm(0, cfg.data.report_interval * 1000, tmr.ALARM_AUTO, function()
+  node.task.post(0, send_report)
+  collectgarbage()
+end)
