@@ -2,20 +2,22 @@ _k = {
   evts = {},
   cmds = {},
 
-  on = function (e, clbk)
+  -- Register event handler
+  on = function (e, cb)
     if not _k.evts[e] then
       _k.evts[e] = {}
     end
 
-    table.insert(_k.evts[e], clbk)
+    table.insert(_k.evts[e], cb)
   end,
 
+  -- Handle event
   emit = function (e, data)
     local r = {}
 
     if _k.evts[e] then
-      for _, clbk in pairs(_k.evts[e]) do
-        r[#r+1] = clbk(data)
+      for _, cb in pairs(_k.evts[e]) do
+        r[#r+1] = cb(data)
       end
     end
 
@@ -23,10 +25,12 @@ _k = {
     return r
   end,
 
-  cmd = function (e, clbk)
-    _k.cmds[e] = clbk
+  -- Register command handler
+  cmd = function (e, cb)
+    _k.cmds[e] = cb
   end,
 
+  -- Handle command
   handle = function (e, data)
     local r = nil
 

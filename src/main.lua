@@ -65,14 +65,16 @@ collectgarbage()
 
 node_id = "ESP-" .. node.chipid()
 wifi.setmode(wifi.STATIONAP)
-dofile('kalmon.lc')
 
--- Init modules
+-- Define module API
+dofile('kalmon.lc')
+-- Load modules
 for _, f in pairs(getMatchedFiles('^module/.+%.lc')) do dofile(f) end
+-- Init modules
 _k.emit('_init')
 
 -- Determine mode (no need when dsleep booting)
-local res, ext_res = node.bootreason()
+local _, ext_res = node.bootreason()
 if ext_res == 5 then
   dofile('application.lc')
 else
