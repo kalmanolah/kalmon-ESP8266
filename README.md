@@ -1,6 +1,6 @@
-## kalmon-ESP8266
+# kalmon-ESP8266
 
-### About
+## About
 
 This is a fun little ESP8266 project.
 
@@ -24,7 +24,7 @@ for:
     * Basic stats gathering
     * Basic node discovery
 
-### Installation
+## Installation
 
 ### Setting up the development environment
 
@@ -90,7 +90,7 @@ The configuration process outlined above can be simplified by using
 [py-kalmon](https://github.com/kalmanolah/py-kalmon) to configure your node
 instead.
 
-### Roadmap
+## Roadmap
 
 This is not a real roadmap.
 
@@ -113,11 +113,11 @@ TODO:
 * Logging over MQTT
 * Write documentation
 
-### License
+## License
 
 See [LICENSE](LICENSE).
 
-### Links/Attributions
+## Links/Attributions
 
 * [nodemcu-uploader](https://github.com/kmpm/nodemcu-uploader)
 * [esptool](https://github.com/themadinventor/esptool)
