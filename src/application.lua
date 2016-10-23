@@ -1,51 +1,39 @@
-if not cfg.data.sta_ssid then
-  print('Wifi: No config')
-  return
-end
-
-if not (cfg.data.mqtt_user and cfg.data.mqtt_password) then
-  print('MQTT: No config')
-  return
-end
-
-local queue_report = nil
 local send_report = nil
 local flush_data = nil
 
-local mq_prefix = "/nodes/" .. node_id
-local mq = mqtt.Client(node_id, 120, cfg.data.mqtt_user, cfg.data.mqtt_password, 0)
-local mq_connected = false
-
+-- Init MQTT
+mq_prefix = "/nodes/" .. node_id
+mq = mqtt.Client(node_id, 120, cfg.data.mqtt_user, cfg.data.mqtt_password, 0)
+mq_conn = false
+mq_flushing = false
 mq_data = {}
-mq_data_ptr = 0
 
--- Register MQTT event handlers
 mq:lwt("/lwt", "offline", 0, 0)
 
 mq:on("connect", function(conn)
   print("MQTT: Connected")
-  mq_connected = true
+  mq_conn = true
 
   -- Subscribe to all command topics
-  for topic, handler in pairs(_k.cmds) do
-    if topic:sub(1, 1) ~= '/' then
-      topic = mq_prefix .. '/commands/' .. topic
+  for cmd, cb in pairs(_k.cmds) do
+    if cmd:sub(1, 1) ~= '/' then
+      cmd = mq_prefix .. '/commands/' .. cmd
     end
 
-    print('MQTT: Subscribing, topic:', topic)
-    mq:subscribe(topic, 1, function(conn) end)
+    print('MQTT: Subscribing, topic:', cmd)
+    mq:subscribe(cmd, 1, function(c) end)
   end
 
   send_report()
   collectgarbage()
 end)
 
-mq:on("offline", function(conn)
+mq:on("offline", function(c)
   print("MQTT: Disconnected")
-  mq_connected = false
+  mq_conn = false
 end)
 
-mq:on("message", function(conn, topic, data)
+mq:on("message", function(c, topic, data)
   print("MQTT: Received, topic:", topic)
   local part = topic:sub(1, #mq_prefix + 1) == mq_prefix .. '/' and topic:sub(#mq_prefix + 1) or topic
   local cmd = part:match('/commands/(.+)') or part
@@ -53,7 +41,7 @@ mq:on("message", function(conn, topic, data)
 
   if res ~= nil then
     mq_data[#mq_data + 1] = { mq_prefix .. '/responses' .. part, cjson.encode(res) }
-    if mq_data_ptr == 0 then flush_data() end
+    if not mq_flushing then flush_data() end
   end
 
   cmd = nil
@@ -63,57 +51,49 @@ mq:on("message", function(conn, topic, data)
 
   if data ~= nil then
     print("MQTT: Data:", data)
+    queue_dsleep()
   end
 end)
 
-flush_data = function(callback)
-  mq_data_ptr = mq_data_ptr + 1
+queue_dsleep = function (init)
+  local act, _ = tmr.state(1)
 
-  if mq_data_ptr > #mq_data then
-    mq_data = {}
-    mq_data_ptr = 0
-
-    if callback ~= nil then
-      callback()
-    end
-  else
-    local d = mq_data[mq_data_ptr]
-
-    mq:publish(d[1], d[2], 0, 0, function(conn)
-      flush_data(callback)
-    end)
-
-    d = nil
+  if (not act) and (not init) then
+    return
   end
 
-  collectgarbage()
-end
-
-queue_report = function()
-  if cfg.data.sleep then
-    if mq_connected then
+  -- Trigger dsleep in 5 seconds
+  -- Delay if already called
+  tmr.unregister(1)
+  tmr.alarm(1, 5000, tmr.ALARM_SINGLE, function()
+    if mq_conn then
       mq:close()
     end
 
     node.dsleep(cfg.data.report_interval * 1000 * 1000)
+  end)
+end
+
+flush_data = function(cb)
+  if #mq_data == 0 then
+    mq_flushing = false
+    if cb ~= nil then
+      cb()
+    end
   else
-    tmr.stop(0)
-    tmr.alarm(0, cfg.data.report_interval * 1000, 0, function()
-      node.task.post(0, send_report)
-      collectgarbage()
+    mq_flushing = true
+    local d = table.remove(mq_data)
+    mq:publish(d[1], d[2], 0, 0, function(c)
+      flush_data(cb)
     end)
   end
 end
 
 send_report = function()
-  if not cfg.data.sleep then
-    queue_report()
-  end
-
   if not wifi.sta.getip() then
     print('Report: No Wifi')
     wifi.sta.connect()
-  elseif not mq_connected then
+  elseif not mq_conn then
     print('Report: No MQTT')
     mq:connect(cfg.data.mqtt_host, cfg.data.mqtt_port, cfg.data.mqtt_secure and 1 or 0)
   else
@@ -127,21 +107,21 @@ send_report = function()
     collectgarbage()
     flush_data(function()
       print('Report: Finished')
-      if cfg.data.sleep then
-        queue_report()
-      end
+      queue_dsleep(cfg.data.sleep)
     end)
   end
 end
 
+-- Init WiFi
 wifi.sleeptype(wifi.MODEM_SLEEP)
 wifi.setphymode(wifi.PHYMODE_G)
 wifi.setmode(wifi.STATION)
+
 wifi.sta.eventMonReg(wifi.STA_GOTIP, function()
-  -- wifi.sta.eventMonStop(1)
   print("WIFI: Connected")
   send_report()
 end)
+
 wifi.sta.eventMonReg(wifi.STA_CONNECTING, function()
   print("WIFI: Connecting..")
 end)
@@ -155,5 +135,12 @@ if cfg.data.sta_ip and cfg.data.sta_gateway and cfg.data.sta_netmask then
 end
 
 wifi.sta.eventMonStart(100)
-wifi.sta.config(cfg.data.sta_ssid, cfg.data.sta_psk)
-send_report()
+wifi.sta.config(cfg.data.sta_ssid, cfg.data.sta_psk, 1)
+
+-- Start report timer if not sleeping
+if not cfg.data.sleep then
+  tmr.alarm(0, cfg.data.report_interval * 1000, tmr.ALARM_AUTO, function()
+    node.task.post(0, send_report)
+    collectgarbage()
+  end)
+end
